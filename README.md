@@ -14,4 +14,4 @@ diary
 接着聊，现在使用python搭建服务器，使用HTML5 Cavans + JavaScript 作为前端
 现在的逻辑还算是比较简单，用python搭建服务器，如果有对象连接8080端口，发送请求"http://127.0.0.1:8000/game.html"那就把本地的game.html文件送过去，对面浏览器就会自动运行。
 
-
+ai是真的快！

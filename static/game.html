@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
     <head>
@@ -27,9 +26,13 @@
         const CONFIG = {
             PLAYER_SIZE: 30,
             BULLET_SPEED: 12,
-            BULLET_SPACE: 12,//多排子弹的子弹间隔
-            ENEMY_SPAWN_RATE: 1,
-            FIRE_RATE: 15,// 毫秒
+            BULLET_SIZE: 12,//多排子弹的子弹间隔
+            ENEMY_SPAWN_RATE: 0.05,
+            FIRE_RATE: 99,// 毫秒
+            ADD_SHOOTER_RATE:400,
+            SHOOTER_SPEED:7,
+            SHOOTER_RIDUS:90,
+            SHOOTER_LIMIT:12,
             PLAYER_SPEED:400
         };
 
@@ -37,13 +40,18 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let lastFireTime = 0;
-
+        let lastAddTime  = 0;
         // 游戏对象池
         const entities = {
-            player: [],
+            players: [],
             bullets: [],
-            enemies: []
+            enemies: [],
+            Shooters:[]
         };
+        //玩家数量
+        let playercnt=1;
+        //画布属性
+        const rect = canvas.getBoundingClientRect();
 
         class Vector2 {//position
             constructor(x=0, y=0) {
@@ -75,6 +83,7 @@
                     );
                 }
             }
+
         }
 
         class Player extends GameObject {
@@ -95,14 +104,24 @@
                 // console.log('%c核心状态:', 'color: #2ecc71; font-weight: bold', {
                 //     position: `(${this.position.x}, ${this.position.y})`,
                 //     velocity: `px/frame`
-                // });浏览器insect居然有控制台？！
+                // });浏览器inspect居然有控制台？！
+            }
+            fire(){
+                const direction = new Vector2(//当前object到鼠标的方向向量
+                    (mouse.x  - rect.left) -this.position.x,
+                    (mouse.y  - rect.top) - this.position.y
+                );
+                entities.bullets.push(new Bullet(
+                    new Vector2(this.position.x, this.position.y),
+                    direction
+                ));
             }
         }
 
         class Bullet extends GameObject {
             constructor(position,direction) {
                 super(new Vector2(position.x,position.y),
-                    8,
+                    CONFIG.BULLET_SIZE,
                     `hsl(${Math.random()*360}, 70%, 60%)`
                 );
                 this.speed = CONFIG.BULLET_SPEED + Math.random()*CONFIG.BULLET_SPEED;
@@ -117,7 +136,6 @@
                 if(this.trail.length > 10) this.trail.shift();
                 if(this.active)this.active = ( this.position.y > -10 );
             }
-
         }
 
         class Enemy extends GameObject {
@@ -134,22 +152,39 @@
                 this.position.y += this.speed * deltaTime;
                 if(this.active) this.active = ( this.position.y < canvas.height + 20 );
             }
+            fire2(){//还没做好
+            }
         }
-        class BulletShooter extends GameObject {//用来作为player的护卫机，也是用来发射子弹的，平常就围着玩家做圆周运动
-            constructor() {
+
+        class Shooter extends GameObject {
+            constructor(PlayerNumber) {
                 super(
-                    new Vector2(Math.random()*(canvas.width-40)+20, -30),
+                    new Vector2(0,0),
                     25,
                     `hsl(${Math.random()*360}, 70%, 60%)`
                 );
-                this.speed = 200 + Math.random()*100;
+                this.belong = PlayerNumber;
+                this.angle = 0.00;//弧度
             }
 
-            update(deltaTime) {
-                this.position.y += this.speed * deltaTime;
-                if(this.active) this.active = ( this.position.y < canvas.height + 20 );
+            update() {
+                this.position.x = entities.players[this.belong].position.x + CONFIG.SHOOTER_RIDUS * Math.cos(this.angle);
+                this.position.y = entities.players[this.belong].position.y + CONFIG.SHOOTER_RIDUS * Math.sin(this.angle);
+                this.angle += CONFIG.SHOOTER_SPEED/60;//弧度
+                if(this.active) this.active = entities.players[this.belong].active;
+            }
+            fire(){
+                const direction = new Vector2(//当前object到鼠标的方向向量
+                    (mouse.x - rect.left) - this.position.x,
+                    (mouse.y - rect.top ) - this.position.y
+                );
+                entities.bullets.push(new Bullet(
+                    new Vector2(this.position.x, this.position.y),
+                    direction
+                ));
             }
         }
+
         // 输入监听系统
         const keys = {};
         window.addEventListener('keydown', e => onKeyDown(e));
@@ -187,8 +222,9 @@
         }
 
         //new player
-        player=new Player();
+        entities.players.push(new Player());
         mouse =new Vector2(0,0);
+        Shootercnt=0;
         // 游戏循环
         function gameLoop(timestamp) {
             const deltaTime = (timestamp - lastFrameTime) / 1000;
@@ -203,32 +239,21 @@
 
             // 发射子弹
             if (keys.Mouse && timestamp - lastFireTime > CONFIG.FIRE_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
-                const rect = canvas.getBoundingClientRect();
-                const direction = new Vector2(//当前玩家到鼠标的方向向量
-                    (mouse.x  - rect.left) -player.position.x,
-                    (mouse.y  - rect.top) - player.position.y
-                );
-                // console.warn('乱七八糟mouse', mouse.x,mouse.y);
-                entities.bullets.push(new Bullet(
-                    new Vector2(player.position.x+CONFIG.BULLET_SPACE, player.position.y),
-                    direction
-                ));
-                entities.bullets.push(new Bullet(
-                    new Vector2(player.position.x-CONFIG.BULLET_SPACE, player.position.y),
-                    direction
-                ));
-                entities.bullets.push(new Bullet(
-                    new Vector2(player.position.x, player.position.y),
-                    direction
-                ));
+                entities.players.forEach(p => p.fire());
+                entities.Shooters.forEach(s => s.fire());
                 lastFireTime = timestamp;
-                // keys.Enter = false;
             }
-
+            // 增加shooter
+            if (Shootercnt <= CONFIG.SHOOTER_LIMIT && timestamp - lastAddTime > CONFIG.ADD_SHOOTER_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
+                entities.Shooters.push(new Shooter(0));//接下来要加个玩家。
+                Shootercnt++;
+                lastAddTime = timestamp;
+            }
             // 更新实体
             updateEntities(entities.bullets, deltaTime);
             updateEntities(entities.enemies, deltaTime);
-            player.update(deltaTime);
+            updateEntities(entities.players, deltaTime);
+            updateEntities(entities.Shooters, deltaTime);
 
             // 生成敌人
             if (Math.random() < CONFIG.ENEMY_SPAWN_RATE) {
@@ -239,9 +264,10 @@
             checkCollisions();
 
             // 渲染
-            player.draw();
+            entities.players.forEach(p => p.draw());
             entities.bullets.forEach(b => b.draw());
             entities.enemies.forEach(e => e.draw());
+            entities.Shooters.forEach(s => s.draw());
 
             requestAnimationFrame(gameLoop);//在此调用自身，并将时间作为参数回传
         }
@@ -269,7 +295,6 @@
             }
         }
         // 启动游戏
-        entities.player = new Player();
         let lastFrameTime = performance.now();
         gameLoop(lastFrameTime);
     </script>

@@ -1,1 +1,277 @@
 
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>雷霆战机控制演示</title>
+        <style>
+            #gameCanvas {
+                border: 2px solid rgb(214, 65, 65);
+                background: black;
+            }
+            body {
+                background: #1a1a1a;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                color: rgb(9, 10, 10);
+            }
+        </style>
+    </head>
+<body>
+    <canvas id="gameCanvas" width="1000" height="1000"></canvas>
+
+    <script>
+        // 游戏配置
+        const CONFIG = {
+            PLAYER_SIZE: 30,
+            BULLET_SPEED: 12,
+            BULLET_SPACE: 12,//多排子弹的子弹间隔
+            ENEMY_SPAWN_RATE: 1,
+            FIRE_RATE: 15,// 毫秒
+            PLAYER_SPEED:400
+        };
+
+        // 初始化画布
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let lastFireTime = 0;
+
+        // 游戏对象池
+        const entities = {
+            player: [],
+            bullets: [],
+            enemies: []
+        };
+
+        class Vector2 {//position
+            constructor(x=0, y=0) {
+                this.x = x;
+                this.y = y;
+            }
+            normalize() {
+                const length = Math.sqrt(this.x**2 + this.y**2);
+                return new Vector2(this.x/length, this.y/length);
+            }  
+        }
+
+        class GameObject {
+            constructor(position, size, color) {
+                this.position = position;
+                this.size = size;
+                this.color = color;
+                this.active = true;
+            }
+
+            draw() {
+                if(this.active){
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(
+                        this.position.x - this.size/2,
+                        this.position.y - this.size/2,
+                        this.size,
+                        this.size
+                    );
+                }
+            }
+        }
+
+        class Player extends GameObject {
+            constructor() {
+                super(new Vector2(canvas.width/2, canvas.height-50), CONFIG.PLAYER_SIZE, '#00f');//继承的
+                this.speed = CONFIG.PLAYER_SPEED;//新增的
+            }
+
+            update(deltaTime) {
+                if (keys.KeyA) this.position.x -= this.speed * deltaTime;
+                if (keys.KeyD) this.position.x += this.speed * deltaTime;
+                if (keys.KeyW) this.position.y -= this.speed * deltaTime;
+                if (keys.KeyS ) this.position.y += this.speed * deltaTime;
+
+                this.position.x = Math.max(CONFIG.PLAYER_SIZE/2, Math.min(canvas.width-CONFIG.PLAYER_SIZE/2, this.position.x));//限制位置不超过左右边界
+                this.position.y = Math.max(CONFIG.PLAYER_SIZE/2, Math.min(canvas.height-CONFIG.PLAYER_SIZE/2, this.position.y));//上下边界
+                // // 结构化日志输出
+                // console.log('%c核心状态:', 'color: #2ecc71; font-weight: bold', {
+                //     position: `(${this.position.x}, ${this.position.y})`,
+                //     velocity: `px/frame`
+                // });浏览器insect居然有控制台？！
+            }
+        }
+
+        class Bullet extends GameObject {
+            constructor(position,direction) {
+                super(new Vector2(position.x,position.y),
+                    8,
+                    `hsl(${Math.random()*360}, 70%, 60%)`
+                );
+                this.speed = CONFIG.BULLET_SPEED + Math.random()*CONFIG.BULLET_SPEED;
+                this.direction=direction.normalize();
+                this.trail=[]; // 弹道轨迹缓存
+            }
+
+            update(deltaTime) {
+                this.position.x += this.direction.x * this.speed;
+                this.position.y += this.direction.y * this.speed;
+                this.trail.push({...this.position});
+                if(this.trail.length > 10) this.trail.shift();
+                if(this.active)this.active = ( this.position.y > -10 );
+            }
+
+        }
+
+        class Enemy extends GameObject {
+            constructor() {
+                super(
+                    new Vector2(Math.random()*(canvas.width-40)+20, -30),
+                    25,
+                    `hsl(${Math.random()*360}, 70%, 60%)`
+                );
+                this.speed = 200 + Math.random()*100;
+            }
+
+            update(deltaTime) {
+                this.position.y += this.speed * deltaTime;
+                if(this.active) this.active = ( this.position.y < canvas.height + 20 );
+            }
+        }
+        class BulletShooter extends GameObject {//用来作为player的护卫机，也是用来发射子弹的，平常就围着玩家做圆周运动
+            constructor() {
+                super(
+                    new Vector2(Math.random()*(canvas.width-40)+20, -30),
+                    25,
+                    `hsl(${Math.random()*360}, 70%, 60%)`
+                );
+                this.speed = 200 + Math.random()*100;
+            }
+
+            update(deltaTime) {
+                this.position.y += this.speed * deltaTime;
+                if(this.active) this.active = ( this.position.y < canvas.height + 20 );
+            }
+        }
+        // 输入监听系统
+        const keys = {};
+        window.addEventListener('keydown', e => onKeyDown(e));
+        window.addEventListener('keyup', e => onKeyUp(e));
+        canvas.addEventListener('mousedown', e => {
+            // console.warn('乱七八糟MouseDown', e);
+            mouse.x=e.clientX;
+            mouse.y=e.clientY;
+            keys.Mouse = true;
+        });
+        canvas.addEventListener('mouseup', e => {
+            // console.warn('乱七八糟MouseUp', e);
+            keys.Mouse = false;
+        });
+        canvas.addEventListener('mousemove', e => {
+            // console.warn('乱七八糟MouseMove', e);
+            if(keys.Mouse){
+                mouse.x=e.clientX;
+                mouse.y=e.clientY;
+            }
+        });
+        function onKeyDown(e){//这里必须用 e.code 因为空格的key值是个空格？？？
+            // if (e.code === 'Enter') keys.Enter = true;
+            if (e.code === 'KeyA') keys.KeyA = true;
+            if (e.code === 'KeyD') keys.KeyD = true;
+            if (e.code === 'KeyW') keys.KeyW = true;
+            if (e.code === 'KeyS') keys.KeyS = true;
+        }
+        function onKeyUp(e){
+            // if (e.code === 'Enter') keys.Enter = false;
+            if (e.code === 'KeyA') keys.KeyA = false;
+            if (e.code === 'KeyD') keys.KeyD = false;
+            if (e.code === 'KeyW') keys.KeyW = false;
+            if (e.code === 'KeyS') keys.KeyS = false;
+        }
+
+        //new player
+        player=new Player();
+        mouse =new Vector2(0,0);
+        // 游戏循环
+        function gameLoop(timestamp) {
+            const deltaTime = (timestamp - lastFrameTime) / 1000;
+            lastFrameTime = timestamp;
+
+            // 清除画布
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height); 
+
+            // 玩家位置
+            // sendPosition(entities.player.position.x, entities.player.position.y);
+
+            // 发射子弹
+            if (keys.Mouse && timestamp - lastFireTime > CONFIG.FIRE_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
+                const rect = canvas.getBoundingClientRect();
+                const direction = new Vector2(//当前玩家到鼠标的方向向量
+                    (mouse.x  - rect.left) -player.position.x,
+                    (mouse.y  - rect.top) - player.position.y
+                );
+                // console.warn('乱七八糟mouse', mouse.x,mouse.y);
+                entities.bullets.push(new Bullet(
+                    new Vector2(player.position.x+CONFIG.BULLET_SPACE, player.position.y),
+                    direction
+                ));
+                entities.bullets.push(new Bullet(
+                    new Vector2(player.position.x-CONFIG.BULLET_SPACE, player.position.y),
+                    direction
+                ));
+                entities.bullets.push(new Bullet(
+                    new Vector2(player.position.x, player.position.y),
+                    direction
+                ));
+                lastFireTime = timestamp;
+                // keys.Enter = false;
+            }
+
+            // 更新实体
+            updateEntities(entities.bullets, deltaTime);
+            updateEntities(entities.enemies, deltaTime);
+            player.update(deltaTime);
+
+            // 生成敌人
+            if (Math.random() < CONFIG.ENEMY_SPAWN_RATE) {
+                entities.enemies.push(new Enemy());
+            }
+
+            // 碰撞检测
+            checkCollisions();
+
+            // 渲染
+            player.draw();
+            entities.bullets.forEach(b => b.draw());
+            entities.enemies.forEach(e => e.draw());
+
+            requestAnimationFrame(gameLoop);//在此调用自身，并将时间作为参数回传
+        }
+
+        function updateEntities(list, deltaTime) {
+            for (let i = list.length-1; i >= 0; i--) {
+                list[i].update(deltaTime);
+                if (!list[i].active) list.splice(i, 1);
+            }
+        }
+
+        function checkCollisions() {
+            // 使用优化后的检测方法
+            for(let i = entities.enemies.length-1; i >=0; i--){
+                for(let j = entities.bullets.length-1; j >=0; j--){
+                    const dx = entities.enemies[i].position.x - entities.bullets[j].position.x;
+                    const dy = entities.enemies[i].position.y - entities.bullets[j].position.y;
+                    // const dy = enemy.position.y - bullet.position.y;
+                    if (dx*dx + dy*dy < Math.pow(( entities.enemies[i].size +  entities.bullets[j].size)/2, 2) && entities.bullets[j].active) {
+                        entities.enemies[i].active =  false;
+                        // console.warn('敌人超出边界', entities.enemies[i])
+                        entities.bullets[j].active = false;
+                    }
+                }
+            }
+        }
+        // 启动游戏
+        entities.player = new Player();
+        let lastFrameTime = performance.now();
+        gameLoop(lastFrameTime);
+    </script>
+</body>
+</html>

@@ -1,13 +1,17 @@
+# 后端 FastAPI 服务 (main.py)
 from fastapi.websockets import WebSocket
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from dataclasses import dataclass
 import time
 from typing import Dict
 import json
+import uvicorn
 
+#使用的服务器
 app = FastAPI()
 
 # 允许跨域
@@ -30,6 +34,7 @@ async def main():
 @app.get("/client.html")
 async def client():
     return FileResponse('static/client.html')  # 路径相对于项目根目录[3]
+
 @app.get("/game.html")
 async def client():
     return FileResponse('static/game.html')  # 路径相对于项目根目录[3]
@@ -42,15 +47,7 @@ async def game_loop(websocket: WebSocket):
     state = GameState()
     while True:
         # 接收客户端消息（非阻塞方式）
-        data = await websocket.receive_text()
-        msg = json.loads(data)
-        
-        # 更新玩家状态（示例：移动指令）
-        if msg['type'] == 'move':
-            state.players[msg['playerId']] = {
-                'x': msg['x'],
-                'y': msg['y']
-            }
+        data = await websocket.receive_text()#实际上，只有在双人模式的时候需要收集游戏数据
         
         # 发送当前游戏状态
         await websocket.send_json({
@@ -67,28 +64,32 @@ async def websocket_endpoint(websocket: WebSocket):
     finally:
         await websocket.close()
 
+@app.post("/send-log-player")
+async def send_log_player(data: dict):
+    print(f"\n\n服务器端的名单：",player_log)
+    """存储鼠标数据并返回处理结果"""
+    try:
+        # 此处可添加数据库存储逻辑  
+        player_log[data["name"]]=data
+        return data
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
+
+@app.post("/get-log-player")
+async def get_log_player(data:dict):
+    print(f"\n\n服务器端的收到了：",data)
+    """使得请求方获取另一个玩家的数据"""
+    try:
+        # 此处可添加数据库存储逻辑  
+        print(f"\n\n发送了：Send: ",data)
+        return player_log[data["name"]]  #一个dict， 包括id
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
 
 
 # 存储玩家位置数据（内存存储示例）
-player_positions: Dict[str, dict] = {}
+player_log: Dict[str, dict] = {}
+player_log["guy"]={'position': {'x': 713.32, 'y': 656.6800000000001}, 'size': 30, 'color': '#00f', 'active': True, 'speed': 400, 'keys': {'KeyW': False, 'KeyA': False, 'KeyS': False, 'KeyD': False, 'Mouse': False}, 'id': 259.054763912734, 'mouse': {'x': 316, 'y': 607}, 'name': 'guy'}
 
-class PositionData(BaseModel):
-    x: int
-    y: int
-    player_id: str
-
-@app.post("/update-position")
-async def update_position(data: PositionData):
-    """更新玩家位置"""
-    player_positions[data.player_id] = {
-        "x": data.x,
-        "y": data.y,
-        "timestamp": time.time()
-    }
-    print("\t\t\t\t\t\t\t\t\t\tx: %d   y: %d  id : %s"%(data.x,data.y,data.player_id))
-    return {"status": "success"}
-
-@app.get("/get-positions")
-async def get_positions():
-    """获取所有玩家位置（用于后续扩展）"""
-    return player_positions
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)

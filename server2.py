@@ -65,19 +65,19 @@ def register(username: str = Form(...), password: str = Form(...)):
 
 # 登录页面
 @app.get("/login", response_class=HTMLResponse)
-def login_page(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+def login_page(request: Request, error: str = None):
+    # 获取 URL 查询参数中的 error 信息
+    return templates.TemplateResponse("login.html", {"request": request, "error": error})
 
 # 登录处理
 @app.post("/login")
 def login(username: str = Form(...), password: str = Form(...)):
     user_key = f"user:{username}"
 
-    # 获取用户信息
     if not r.exists(user_key):
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+        # 用户名错误，跳转并显示错误信息
+        return RedirectResponse(url="/login?error=Invalid%20username%20or%20password", status_code=303)
 
-    # 获取用户的详细信息
     user_data = r.hgetall(user_key)
 
     # 检查账户是否被锁定
@@ -87,7 +87,7 @@ def login(username: str = Form(...), password: str = Form(...)):
             lock_until_time = datetime.strptime(lock_until, "%Y-%m-%d %H:%M:%S")
             if lock_until_time > datetime.now():
                 lock_duration = (lock_until_time - datetime.now()).seconds // 60
-                raise HTTPException(status_code=403, detail=f"Account locked. Try again after {lock_duration} minutes.")
+                return RedirectResponse(url=f"/login?error=Account%20locked.%20Try%20again%20after%20{lock_duration}%20minutes", status_code=303)
 
     # 验证密码
     if not bcrypt.checkpw(password.encode('utf-8'), user_data["hashed_password"].encode('utf-8')):
@@ -101,11 +101,11 @@ def login(username: str = Form(...), password: str = Form(...)):
                 "failed_attempts": 0,
                 "lock_until": lock_until_time
             })
-            raise HTTPException(status_code=401, detail="Invalid username or password. Account locked for 30 minutes.")
+            return RedirectResponse(url="/login?error=Invalid%20username%20or%20password.%20Account%20locked%20for%2030%20minutes", status_code=303)
         
         # 更新失败次数
         r.hset(user_key, "failed_attempts", failed_attempts)
-        raise HTTPException(status_code=401, detail="Invalid username or password")
+        return RedirectResponse(url="/login?error=Invalid%20username%20or%20password", status_code=303)
 
     # 如果密码正确，重置失败次数和锁定时间
     r.hset(user_key, mapping={
@@ -113,7 +113,14 @@ def login(username: str = Form(...), password: str = Form(...)):
         "lock_until": ""  # 重置 lock_until 为一个空字符串
     })
 
-    return {"message": f"Welcome back, {username}!"}
+    # 登录成功，重定向到主页或其他页面
+    return RedirectResponse(url="/home", status_code=303)
+
+# 首页路由，返回 home.html
+@app.get("/home", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
+
 
 # WebSocket 游戏逻辑
 class Player:
@@ -191,5 +198,6 @@ def check_db():
 # 运行服务器
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 
 

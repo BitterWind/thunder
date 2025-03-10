@@ -11,18 +11,6 @@ r = get_redis()
 # 此处记录玩家的初始数据
 router = APIRouter(prefix="/player_data_memory", tags=["玩家数据库管理"])
 
-# POST /player_data_memory/scores HTTP/1.1"
-@router.post("/get_id")
-async def get_id(data: Dict):
-    try:
-        print(data)
-        x = await game_service.get_id(data["name"])
-        y = await game_service.get_room(data["mode"], x, data["obj"])
-        return {"id":x, "room":y}
-    except Exception as e:
-        print(str(e))
-        raise HTTPException(500, detail=str(e))
-    
 @router.post("/scores", 
             response_model=dict,
             status_code=201, 
@@ -32,10 +20,10 @@ async def submit_score(data: dict):
         print(data)
         # 更新/添加分数到排行榜
         r.zadd("leaderboard", {data["id"]: data["score"]}, nx=False)
-        
+        print(r.zrange("leaderboard", 0, -1, withscores=True))
         # 获取当前排名（Redis返回的是从0开始的排名）
         raw_rank = r.zrevrank("leaderboard", data["id"])
-        
+
         if raw_rank is None:
             raise HTTPException(500, "Failed to get ranking")
         
@@ -48,7 +36,7 @@ async def submit_score(data: dict):
             "rank": current_rank,
             "message": "Score updated successfully"
         }
-        
+    
     except Exception as e:
         raise HTTPException(500, f"Redis error: {str(e)}")
     

@@ -20,7 +20,7 @@ class GameService:
             'speed': 400,
             'key_mouse': {'KeyA': False, 'KeyS': False, 'KeyW': False, 'KeyD': False, 'Mouse': False},
             'mouse': {'x': 0, 'y': 0},
-            'shootercnt': 0 #血量
+            'shooter_cnt': 0 #血量
         }
 
     async def update_player_log(self, data: dict) -> int:
@@ -43,7 +43,7 @@ class GameService:
             'key_mouse': {'KeyA': False, 'KeyS': False, 'KeyW': False, 'KeyD': False, 'Mouse': False},
             'mouse': {'x': 0, 'y': 0},
             'name': name,
-            'shootercnt': 0 #血量
+            'shooter_cnt': 0 #血量
         }
         self.id += 1 
         return self.id -1 

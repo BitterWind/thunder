@@ -1,5 +1,6 @@
 import { entities, CONFIG, canvas, ctx, game_state } from './config.js';
 import { Enemy, Shooter} from './classes.js';
+import { send_score} from './network.js';
 
 export let lastFrameTime = 0;
 export let lastFireTime = 0;
@@ -23,8 +24,8 @@ export function checkCollisions() {
             // const dy = enemy.position.y - bullet.position.y;
             if (dx*dx + dy*dy < Math.pow(( entities.enemies[i].size +  entities.bullets[j].size)/2, 2) && entities.bullets[j].active) {
                 entities.enemies[i].active =  false;
-                // console.warn('敌人超出边界', entities.enemies[i])
                 entities.bullets[j].active = false;
+                game_state.score+=1;
             }
         }
     }
@@ -41,8 +42,8 @@ export function gameLoop(timestamp) {
     
     //只有在双人模式的时候需要传送数据
     if(game_state.mode ==2 ){//&& Bool
-        dataSend(entities.players[0]);
-        dataRequest();
+        data_send(entities.players[0]);
+        data_request();
         // Bool=!Bool;
     }
     // 发射子弹
@@ -62,14 +63,14 @@ export function gameLoop(timestamp) {
     // 增加shooter
     if ( timestamp - lastAddTime > CONFIG.ADD_SHOOTER_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
         lastAddTime = timestamp;
-        if(entities.players[0].shooterCnt <= CONFIG.SHOOTER_LIMIT ){
+        if(entities.players[0].shooter_cnt <= CONFIG.SHOOTER_LIMIT ){
             entities.Shooters1.push(new Shooter(0));//接下来要加个玩家。
-            entities.players[0].shooterCnt++;
+            entities.players[0].shooter_cnt++;
         }
         if(game_state.mode==2 ){
-            if(entities.players[1].shooterCnt <= CONFIG.SHOOTER_LIMIT ){
+            if(entities.players[1].shooter_cnt <= CONFIG.SHOOTER_LIMIT ){
                 entities.shooters2.push(new Shooter(1));//接下来要加个玩家。
-                entities.players[1].shooterCnt++;
+                entities.players[1].shooter_cnt++;
             }
         }
     }
@@ -94,9 +95,11 @@ export function gameLoop(timestamp) {
     entities.enemies.forEach(e => e.draw());
     entities.Shooters1.forEach(s => s.draw());
     if(game_state.mode==2)entities.shooters2.forEach(s => s.draw());
-    game_state.timeCnt++;
-    if(game_state.timeCnt==61){
-        game_state.timeCnt=0;
+    game_state.time_cnt++;
+    if(game_state.time_cnt==61){
+        game_state.time_cnt=0;
+        // update_leader_board();
+        send_score(game_state.score);
         console.log('user data', game_state);
     }
     requestAnimationFrame(gameLoop);//在此调用自身，并将时间作为参数回传

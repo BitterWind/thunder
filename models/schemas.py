@@ -16,7 +16,7 @@ class player_data(BaseModel):
     speed: int
     key_mouse: dict
     mouse: dict
-    shootercnt: int
+    shooter_cnt: int
 
 #memory data
 class other_player_data(BaseModel):

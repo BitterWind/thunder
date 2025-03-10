@@ -13,7 +13,8 @@ export const CONFIG = {
     PLAYER_SPEED:500,
     SEND_DATA   :"http://"+ip+"/player_data_cache/send_log_player",
     GET_DATA    :"http://"+ip+"/player_data_cache/get_log_player",
-    GET_ID      :"http://"+ip+"/player_data_cache/get_id"
+    GET_ID      :"http://"+ip+"/player_data_cache/get_id",
+    SEND_SCORE  :"http://"+ip+"/player_data_memory/scores"
 };
 
 // 初始化游戏
@@ -36,8 +37,8 @@ export let game_state = {
     mode: 1,//单人模式还是双人模式。
     name: "0",// 对的，暂时还不支持重复和空name，后续把id匹配上就好了。
     room: 0, //是的这里的东西应该是可以修改的
-    playerID: 0,//在第一次接收数据的时候由服务器生成，这里需要一个最小堆。
-    teamMember: "NULL",
-    timeCnt: 0,
-    playerCnt: 1,//玩家数量
+    player_id: 0,//在第一次接收数据的时候由服务器生成，这里需要一个最小堆。
+    team_member: "NULL",
+    time_cnt: 0,
+    score: 0
 };

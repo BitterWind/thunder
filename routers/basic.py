@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse
 
 router = APIRouter()
-
+#只在分发界面的时候使用get，数据方面使用post
 #this file is bound for hanging files 
 
 @router.get("/")
@@ -16,7 +16,6 @@ async def client():
 @router.get("/favicon.ico ")
 async def favicon():
     return FileResponse('project/favicon.ico')
-
 @router.get("/game.html")
 async def game1():
     return FileResponse('project/index.html')

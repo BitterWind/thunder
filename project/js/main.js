@@ -5,7 +5,8 @@ import { Player } from './classes.js';
 import { player_init } from './network.js';
 
 // 初始化玩家
-entities.players.push(new Player(player_init()));
+player_init()
+entities.players.push(new Player());
 // entities.players.push(new Player(1));
 // document.write("fhjdsklajfdslfjdsklfjkasljsa")
 

@@ -2,7 +2,7 @@ import { entities } from './config.js';
 
 export function initInput(canvas) {
 
-    // 输入监听系统，只更新主玩家的数据内容，双人模式下的副玩家通过dataRequest()更新
+    // 输入监听系统，只更新主玩家的数据内容，双人模式下的副玩家通过data_request()更新
     window.addEventListener('keydown', e => onKeyDown(e));
     window.addEventListener('keyup', e => onKeyUp(e));
     canvas.addEventListener('mousedown', e => {

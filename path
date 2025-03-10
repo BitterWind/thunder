@@ -1,3 +1,7 @@
 e:
-cd E:\code\thunder\server
+cd E:\code\thunder\github_destop\thunder 
 activate thunder
+
+redis-server.exe redis.windows.conf
+
+启动widnows的redis数据库服务

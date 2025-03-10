@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 def create_app():
     app = FastAPI(
         title="游戏排行榜服务",
-        description="基于Redis和FastAPI的实时排行榜系统",
+        description="基于FastAPI的实时排行榜系统",
         version="1.0.0"
     )
     # CORS 配置, 允许所有的IP地址访问该服务器。
@@ -15,7 +15,9 @@ def create_app():
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    
     # 挂载静态文件
     app.mount("/project", StaticFiles(directory="project"), name="project")
 
     return app
+

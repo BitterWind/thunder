@@ -1,5 +1,5 @@
 //类的实现。
-import { CONFIG, entities , gameState, canvas, ctx } from './config.js';
+import { CONFIG, entities , game_state, canvas, ctx } from './config.js';
 
 //position
 export class Vector2 {
@@ -52,13 +52,14 @@ export class GameObject {
 //游戏逻辑实体 ： 玩家
 export class Player extends GameObject {
     //新增数据，包括所有的键盘状态，每个玩家都有自己的一套键盘状态。
-    constructor(playerID) {
+    constructor(dic) {
         super(new Vector2(canvas.width/2, canvas.height-50), CONFIG.PLAYER_SIZE, `hsl(${Math.random()*360}, 70%, 60%)`);//继承的
         this.speed = CONFIG.PLAYER_SPEED;//速度
         this.keyMouse=new KeyMouse(false,false,false,false,false);//player对应单独键盘监听系统
         this.mouse=new Vector2(0,0);
-        this.id=playerID; 
-        this.name=gameState.name;//后面需要让name在图标的头顶标记着。
+        this.id=dic["name"]; 
+        this.room=dic["room"]; 
+        this.name=game_state.name;//后面需要让name在图标的头顶标记着。
         this.shooterCnt=0;//双人模式下用来实时同步血量，对的这里的护卫机也是血量的表现。
     }
 
@@ -71,7 +72,7 @@ export class Player extends GameObject {
         this.position.x = Math.max(CONFIG.PLAYER_SIZE/2, Math.min(canvas.width-CONFIG.PLAYER_SIZE/2, this.position.x));//限制位置不超过左右边界
         this.position.y = Math.max(CONFIG.PLAYER_SIZE/2, Math.min(canvas.height-CONFIG.PLAYER_SIZE/2, this.position.y));//上下边界
         // // 结构化日志输出
-        // if(gameState.timeCnt==60)console.log('%c核心状态:', 'color: #2ecc71; font-weight: bold', {
+        // if(game_state.timeCnt==60)console.log('%c核心状态:', 'color: #2ecc71; font-weight: bold', {
         //     position: `(${this.position.x}, ${this.position.y})`,
         //     velocity: `px/frame`
         // });浏览器inspect居然有控制台？！

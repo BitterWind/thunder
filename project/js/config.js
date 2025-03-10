@@ -1,4 +1,5 @@
 // 全局游戏配置
+let ip = "192.168.91.1:8000"
 export const CONFIG = {
     PLAYER_SIZE: 30,
     BULLET_SPEED: 12,
@@ -10,9 +11,9 @@ export const CONFIG = {
     SHOOTER_RIDUS:90,
     SHOOTER_LIMIT:12,
     PLAYER_SPEED:500,
-    SEND_DATA:"http://localhost:8000/send-log-player",
-    GET_DATA:"http://localhost:8000/get-log-player",
-    GET_ID:"http://localhost:8000/send-id"
+    SEND_DATA   :"http://"+ip+"/player_data_cache/send_log_player",
+    GET_DATA    :"http://"+ip+"/player_data_cache/get_log_player",
+    GET_ID      :"http://"+ip+"/player_data_cache/get_id"
 };
 
 // 初始化游戏
@@ -26,14 +27,15 @@ export const entities = {
     bullets: [],
     enemies: [],
     Shooters1: [],
-    Shooters2: []
+    shooters2: []
 };
 
 // 游戏配置
-export const gameState = {
+export let game_state = {
     bool: false,//调试用的，避免发送过多消息
     mode: 1,//单人模式还是双人模式。
     name: "0",// 对的，暂时还不支持重复和空name，后续把id匹配上就好了。
+    room: 0, //是的这里的东西应该是可以修改的
     playerID: 0,//在第一次接收数据的时候由服务器生成，这里需要一个最小堆。
     teamMember: "NULL",
     timeCnt: 0,

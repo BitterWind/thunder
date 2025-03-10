@@ -8,6 +8,8 @@ export function initInput(canvas) {
     canvas.addEventListener('mousedown', e => {
         // console.log('乱七八糟MouseDown', e);
         entities.players[0].keyMouse.Mouse = true;
+        entities.players[0].mouse.x=e.clientX;
+        entities.players[0].mouse.y=e.clientY;
     });
     canvas.addEventListener('mouseup', e => {
         // console.log('乱七八糟MouseUp', e);
@@ -15,10 +17,8 @@ export function initInput(canvas) {
     });
     canvas.addEventListener('mousemove', e => {//这是个类似于 lambda的简单内嵌函数。
         // console.log('乱七八糟MouseMove', e);
-        if(entities.players[0].keyMouse.Mouse){
-            entities.players[0].mouse.x=e.clientX;
-            entities.players[0].mouse.y=e.clientY;
-        }
+        entities.players[0].mouse.x=e.clientX;
+        entities.players[0].mouse.y=e.clientY;
     });
 }
 

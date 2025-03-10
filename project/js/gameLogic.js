@@ -1,11 +1,11 @@
-import { entities, CONFIG, canvas, ctx, gameState } from './config.js';
+import { entities, CONFIG, canvas, ctx, game_state } from './config.js';
 import { Enemy, Shooter} from './classes.js';
 
 export let lastFrameTime = 0;
 export let lastFireTime = 0;
 export let lastAddTime = 0;
 
-//更新游戏实体
+//更新游戏实体  
 export function updateEntities(list, deltaTime) {
     for (let i = list.length-1; i >= 0; i--) {
         list[i].update(deltaTime);
@@ -40,7 +40,7 @@ export function gameLoop(timestamp) {
     ctx.fillRect(0, 0, canvas.width, canvas.height); 
     
     //只有在双人模式的时候需要传送数据
-    if(gameState.mode ==2 ){//&& Bool
+    if(game_state.mode ==2 ){//&& Bool
         dataSend(entities.players[0]);
         dataRequest();
         // Bool=!Bool;
@@ -51,10 +51,10 @@ export function gameLoop(timestamp) {
             entities.players[0].fire();
             entities.Shooters1.forEach(s => s.fire());
         }
-        if(gameState.mode==2){
+        if(game_state.mode==2){
             if (entities.players[1].keyMouse.Mouse){ //&&fire
                 entities.players[1].fire();
-                entities.Shooters2.forEach(s => s.fire());
+                entities.shooters2.forEach(s => s.fire());
             }
         }
         lastFireTime = timestamp;
@@ -66,9 +66,9 @@ export function gameLoop(timestamp) {
             entities.Shooters1.push(new Shooter(0));//接下来要加个玩家。
             entities.players[0].shooterCnt++;
         }
-        if(gameState.mode==2 ){
+        if(game_state.mode==2 ){
             if(entities.players[1].shooterCnt <= CONFIG.SHOOTER_LIMIT ){
-                entities.Shooters2.push(new Shooter(1));//接下来要加个玩家。
+                entities.shooters2.push(new Shooter(1));//接下来要加个玩家。
                 entities.players[1].shooterCnt++;
             }
         }
@@ -78,7 +78,7 @@ export function gameLoop(timestamp) {
     updateEntities(entities.enemies, deltaTime);
     updateEntities(entities.players, deltaTime);
     updateEntities(entities.Shooters1, deltaTime);
-    if(gameState.mode==2)updateEntities(entities.Shooters2, deltaTime);
+    if(game_state.mode==2)updateEntities(entities.shooters2, deltaTime);
 
     // 生成敌人
     if (Math.random() < CONFIG.ENEMY_SPAWN_RATE) {
@@ -93,11 +93,11 @@ export function gameLoop(timestamp) {
     entities.bullets.forEach(b => b.draw());
     entities.enemies.forEach(e => e.draw());
     entities.Shooters1.forEach(s => s.draw());
-    if(gameState.mode==2)entities.Shooters2.forEach(s => s.draw());
-    gameState.timeCnt++;
-    if(gameState.timeCnt==61){
-        gameState.timeCnt=0;
-        console.log('user data', entities.players);
+    if(game_state.mode==2)entities.shooters2.forEach(s => s.draw());
+    game_state.timeCnt++;
+    if(game_state.timeCnt==61){
+        game_state.timeCnt=0;
+        console.log('user data', game_state);
     }
     requestAnimationFrame(gameLoop);//在此调用自身，并将时间作为参数回传
 }

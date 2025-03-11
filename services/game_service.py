@@ -1,6 +1,6 @@
 from typing import Dict
 from models.schemas import game_state
-# cache  storage fash and life short data , for example , position , moving direction ,etc 
+# cache storage fash and life short data , for example , position , moving direction ,etc 
 
 class GameService:
     def __init__(self):

@@ -1,6 +1,6 @@
 import { entities, CONFIG, canvas, ctx, game_state } from './config.js';
 import { Enemy, Shooter} from './classes.js';
-import { send_score} from './network.js';
+import { send_score, leaderboard_request} from './network.js';
 
 export let lastFrameTime = 0;
 export let lastFireTime = 0;
@@ -100,6 +100,7 @@ export function gameLoop(timestamp) {
         game_state.time_cnt=0;
         // update_leader_board();
         send_score(game_state.score);
+        leaderboard_request();
         console.log('user data', game_state);
     }
     requestAnimationFrame(gameLoop);//在此调用自身，并将时间作为参数回传

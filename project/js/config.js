@@ -11,10 +11,11 @@ export const CONFIG = {
     SHOOTER_RIDUS:90,
     SHOOTER_LIMIT:12,
     PLAYER_SPEED:500,
-    SEND_DATA   :"http://"+ip+"/player_data_cache/send_log_player",
-    GET_DATA    :"http://"+ip+"/player_data_cache/get_log_player",
-    GET_ID      :"http://"+ip+"/player_data_cache/get_id",
-    SEND_SCORE  :"http://"+ip+"/player_data_memory/scores"
+    SEND_DATA       :"http://"+ip+"/player_data_cache/send_log_player",
+    GET_DATA        :"http://"+ip+"/player_data_cache/get_log_player",
+    GET_ID          :"http://"+ip+"/player_data_cache/get_id",
+    SEND_SCORE      :"http://"+ip+"/player_data_memory/scores",
+    GET_LEADERBOARD :"http://"+ip+"/player_data_memory/leaderboard"
 };
 
 // 初始化游戏

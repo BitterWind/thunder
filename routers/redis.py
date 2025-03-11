@@ -2,6 +2,7 @@
 from fastapi import APIRouter, HTTPException
 from models.schemas import score_submit, leaderboard_entry
 from data_bases.redis import get_redis
+from services.game_service import game_service
 from typing import List,Dict
 
 #storage loong living data , like score , name , id ,etc : everything left after gaming 
@@ -17,10 +18,10 @@ router = APIRouter(prefix="/player_data_memory", tags=["玩家数据库管理"])
             summary="提交分数并返回排名")
 async def submit_score(data: dict): 
     try:
-        print(data)
+        # print(data)
         # 更新/添加分数到排行榜
         r.zadd("leaderboard", {data["id"]: data["score"]}, nx=False)
-        print(r.zrange("leaderboard", 0, -1, withscores=True))
+        # print(r.zrange("leaderboard", 0, -1, withscores=True)) 后续可以根据user id去找到
         # 获取当前排名（Redis返回的是从0开始的排名）
         raw_rank = r.zrevrank("leaderboard", data["id"])
 
@@ -40,27 +41,25 @@ async def submit_score(data: dict):
     except Exception as e:
         raise HTTPException(500, f"Redis error: {str(e)}")
     
-@router.get("/leaderboard", response_model=List[leaderboard_entry], summary="获取排行榜")
-async def get_leaderboard(top: int = 10):
-    try:
-        leaderboard = r.zrevrange("leaderboard", 0, top-1, withscores=True, score_cast_func=float)
-        return [
-            leaderboard_entry(user_id=uid, score=score, rank=idx+1)
-            for idx, (uid, score) in enumerate(leaderboard)
-        ]
-    except Exception as e:
-        raise HTTPException(500, f"Redis error: {str(e)}")
 
-@router.get("/users/{user_id}/rank", summary="获取用户排名")
-async def get_user_rank(user_id: str):
+@router.post("/leaderboard", 
+           summary="查询排行榜（POST方法）",
+           description="通过POST请求查询排行榜，支持分页和完整列表")
+async def leaderboard(request: dict):
     try:
-        score = r.zscore("leaderboard", user_id)
-        if not score: raise HTTPException(404, "User not found")
-        rank = r.zrevrank("leaderboard", user_id)
-        return {
-            "user_id": user_id,
-            "score": float(score),
-            "rank": rank + 1 if rank is not None else None
-        }
+        # 计算分页范围
+        # start = (request["page"] - 1) * request["page_size"] #从第几页开始吗。
+        # end = start + request["page_size"]  - 1
+        start = 0
+        end   = 10
+        # 处理完整列表请求
+        leaderboard = r.zrevrange("leaderboard", start, end, withscores=True)
+
+        print(leaderboard)
+        ans = {}
+        for rank,(id, score) in enumerate(leaderboard):
+            ans[game_service.player_log[int(id)]["name"]] = (score, int(id)+1, rank)
+        print(ans)
+        return ans  
     except Exception as e:
         raise HTTPException(500, f"Redis error: {str(e)}")

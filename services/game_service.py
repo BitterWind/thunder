@@ -10,7 +10,7 @@ class GameService:
         self.room_ptr   : int                   =   1 # ptr
         self.room_cnt   : int                   =   0
         # 初始化测试数据
-        self.player_log[1] = {
+        self.player_log[0] = {
             'name': '1',
             'id':0,
             'position': {'x': 500, 'y': 950},

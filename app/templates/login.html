@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <style>
+
+        /* 背景样式 */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url("../static/images/background.jpg");
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 登录表单样式 */
+        .login-form {
+            background: rgba(255, 255, 255, 0.9); /* 半透明白色背景 */
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            text-align: center;
+            position: relative;
+        }
+
+        .login-form h2 {
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-form form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .login-form label {
+            color: #666;
+            font-size: 1.2rem;
+            text-align: left;
+            margin-bottom: 8px;
+        }
+
+        .login-form input {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .login-form button {
+            background: linear-gradient(135deg, #71b7e6, #9b59b6);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background 0.3s ease;
+        }
+
+        .login-form button:hover {
+            background: linear-gradient(135deg, #9b59b6, #71b7e6);
+        }
+
+        /* 添加一些动画效果 */
+        .login-form {
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 错误提示样式 */
+        .error {
+            color: #ff4444;
+            font-size: 1rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+        /* 注册按钮样式 */
+        .register-link {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .register-link a {
+            color: #71b7e6;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* 动态提示框样式 */
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 20px 35px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.1rem;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+
+            transform: tramslateX(-50%) scale(0.8);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+        }
+
+        .alert.show {
+            opacity: 1;
+            visibility: visible;
+            top: 30px;
+            transform: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        /* 增加入场动画 */
+        @keyframes popIn {
+            0% {
+               transform: translateX(-50%) scale(0.5);
+                opacity: 0;
+            }
+            70% {
+                transform: translateX(-50%) scale(1.1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) scale(1);
+            }
+        }
+
+        .alert.show {
+            animation: popIn 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+
+        /* 进度条动画同步 */
+        .progress {
+            width: 100%;
+            transition: width 3s linear; /* 与显示时间同步 */
+        }
+
+        /* 成功提示 */
+        .alert-success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            border-left: 5px solid #1e8449;
+        }
+
+        /* 错误提示 */
+        .alert-error {
+            background: linear-gradient(135deg, #d67f75, #c0392b);
+            color: white;
+            border-left: 5px solid #922b21;
+        }
+
+        /* 图标动画 */
+        .alert-icon {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.5);
+            width: 100%;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .progress {
+            height: 100%;
+            background: white;
+            width: 100%;
+            transition: width 4s linear;
+        }
+    </style>
+</head>
+<body>
+<div class="alert">
+    <i class="alert-icon"></i>
+    <span class="alert-message"></span>
+    <div class="progress-bar">
+        <div class="progress"></div>
+    </div>
+</div>
+<div class="login-form">
+    <h2>登录</h2>
+    <form method="post">
+        <label for="username">用户名:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">密码:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">登录</button>
+    </form>
+    <div class="register-link">
+        <a href="{{ url_for('register') }}">还没有账号？立即注册</a>
+    </div>
+</div>
+<script>
+    // 在现有DOMContentLoaded事件监听器中增加错误处理
+    document.addEventListener('DOMContentLoaded', function() {
+        // 保留原有成功提示逻辑
+        const urlParams = new URLSearchParams(window.location.search);
+        const successMsg = urlParams.get('msg');
+        if (successMsg) {
+            showAlert('success', successMsg);
+        }
+
+        // 新增错误类型判断
+        {% if error_message %}
+            // 根据错误类型显示不同提示
+            if ("{{ error_message }}" === "该用户不存在") {
+                showAlert('error', "⚠️ 用户不存在，请检查用户名或注册新账号");
+            } else if ("{{ error_message }}" === "密码错误") {
+                showAlert('error', "🔒 密码错误，请重新输入");
+            } else {
+                showAlert('error', "⚠️ {{ error_message }}");
+            }
+        {% endif %}
+    });
+
+    function showAlert(type, message) {
+        const alert = document.querySelector('.alert');
+        const messageEl = alert.querySelector('.alert-message');
+
+        // 重置样式
+        alert.className = 'alert';
+        alert.classList.add(`alert-${type}`);
+
+        messageEl.textContent = message;
+
+        // 显示提示
+        alert.classList.add('show');
+
+        // 1.5秒后自动隐藏
+        setTimeout(() => {
+            alert.classList.remove('show');
+        }, 1500);
+    }
+    </script>
+
+</body>
+</html>

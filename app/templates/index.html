@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>雷霆战机控制演示</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        #gameCanvas {
+            border: 4px solid #00f3ff;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff inset;
+            background-color: #000;
+        }
+
+        #exitButton {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #002040, #004080);
+            border: 2px solid #00f3ff;
+            color: #00f3ff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #exitButton:hover {
+            background: linear-gradient(45deg, #004080, #0080ff);
+            box-shadow: 0 0 20px #00f3ff;
+            transform: scale(1.05);
+        }
+
+        /* 提示框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #002040;
+            border: 2px solid #00f3ff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .modal-content h2 {
+            color: #00f3ff;
+            margin-top: 0;
+        }
+
+        .modal-content p {
+            color: white;
+            margin: 10px 0;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #002040, #004080);
+            border: 2px solid #00f3ff;
+            color: #00f3ff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .modal-content button:hover {
+            background: linear-gradient(45deg, #004080, #0080ff);
+            box-shadow: 0 0 20px #00f3ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        <button id="exitButton">退出游戏</button>
+    </div>
+
+    <!-- 退出提示框 -->
+    <div class="modal" id="exitModal" style="display:none">
+        <div class="modal-content">
+            <h2>亲爱的好汉</h2>
+            <p id="scoreInfo"></p>
+            <p>是否结束战斗？</p>
+            <button id="confirmExit">确认</button>
+            <button id="cancel">取消</button>
+        </div>
+    </div>
+
+    <!-- 按依赖顺序加载模块 -->
+    <script type="module" src="/static/js/config.js"></script>
+    <script type="module" src="/static/js/classes.js"></script>
+    <script type="module" src="/static/js/input.js"></script>
+    <script type="module" src="/static/js/network.js"></script>
+    <script type="module" src="/static/js/gameLogic.js"></script>
+    <script type="module" src="/static/js/main.js"></script>
+
+    <script type="module">
+        import { game_state } from '/static/js/config.js';
+        // 确保 game_state 是全局变量
+        window.game_state = game_state;
+
+        // 绑定退出按钮点击事件
+        document.getElementById('exitButton').addEventListener('click', showExitPrompt);
+
+        // 在 DOM 完全加载后绑定确认和取消按钮的事件
+        window.addEventListener('DOMContentLoaded', function() {
+            const confirmExit = document.getElementById('confirmExit');
+            const cancel = document.getElementById('cancel');
+            if (confirmExit) {
+                confirmExit.addEventListener('click', exitGame);
+            } else {
+                console.error('未找到确认按钮');
+            }
+            if (cancel) {
+                cancel.addEventListener('click', cancelPrompt);
+            } else {
+                console.error('未找到取消按钮');
+            }
+        });
+
+        // 退出游戏提示框
+        function showExitPrompt() {
+            const modal = document.getElementById('exitModal');
+            const scoreInfo = document.getElementById('scoreInfo');
+
+            // 获取当前用户分数和最高分
+            const currentScore = game_state.score;
+            const maxScore = game_state.maxScore || 0;
+
+            // 更新最高分逻辑
+            if (currentScore > maxScore) {
+                game_state.maxScore = currentScore;
+                scoreInfo.innerHTML = `你的当前分数：${currentScore}<br>恭喜！你创造了新的最高分：${currentScore}`;
+            } else {
+                scoreInfo.innerHTML = `你的当前分数：${currentScore}<br>你的最高分：${maxScore}`;
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        // 退出游戏函数
+        function exitGame() {
+            const modal = document.getElementById('exitModal');
+            modal.style.display = 'none';
+            window.location.href = '/home';
+        }
+
+        // 取消退出函数
+        function cancelPrompt() {
+            const modal = document.getElementById('exitModal');
+            modal.style.display = 'none';
+        }
+
+        // 确保游戏容器不超过浏览器窗口大小
+        function resizeGameContainer() {
+            const container = document.getElementById('gameContainer');
+            const canvas = document.getElementById('gameCanvas');
+
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+
+            const containerWidth = Math.min(windowWidth * 0.9, 800);
+            const containerHeight = Math.min(windowHeight * 0.9, 600);
+
+            container.style.width = containerWidth + 'px';
+            container.style.height = containerHeight + 'px';
+
+            // 调整画布大小以适应容器
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+        }
+
+        // 页面加载完成后调整游戏容器大小
+        window.addEventListener('load', resizeGameContainer);
+        // 窗口大小改变时调整游戏容器大小
+        window.addEventListener('resize', resizeGameContainer);
+    </script>
+</body>
+</html>

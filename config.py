@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic_settings import BaseSettings
 from pydantic import Field
+import os.path
 
+db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".\\test.db")
 #用于初始化一个fastapi s
 def create_app():
     app = FastAPI(
@@ -25,7 +27,7 @@ def create_app():
     return app
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "sqlite:///./test.db"
+    DATABASE_URL: str = "sqlite:{db_path}"
     SECRET_KEY: str = "your-secret-key-here"
     ALGORITHM: str = "HS256"
 

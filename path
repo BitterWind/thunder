@@ -2,6 +2,8 @@ e:
 cd E:\code\thunder\github_destop\thunder 
 activate thunder
 
+E:\code\thunder\thunder-login
+
 cd E:\tools\redis
 redis-server.exe redis.windows.conf
 

@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from models.user import User
-from database import SessionLocal
+from data_bases.SQLite import SessionLocal
 from security import get_password_hash, verify_password
 
 router = APIRouter()
@@ -31,7 +31,6 @@ async def login_page(request: Request, msg: str = None):
         {"request": request, "error_message": msg}
     )
 
-
 @router.post("/login")
 async def login(
         request: Request,
@@ -57,7 +56,6 @@ async def register_page(request: Request, msg: str = None):
         "register.html",
         {"request": request, "error_message": msg}
     )
-
 
 @router.post("/register")
 async def register(

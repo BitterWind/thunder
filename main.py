@@ -1,7 +1,9 @@
 from config import create_app
 from routers import basic, websocket, player, redis, auth
 from fastapi.staticfiles import StaticFiles
+from data_bases.SQLite import Base, engine
 
+Base.metadata.create_all(bind=engine)
 # 初始化应用
 app = create_app()
 

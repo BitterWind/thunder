@@ -16,3 +16,4 @@ async def websocket_endpoint(websocket: WebSocket):
         print(f"连接异常: {str(e)}")
     finally:
         await websocket.close()
+        

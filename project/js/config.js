@@ -15,7 +15,8 @@ export const CONFIG = {
     GET_DATA        :"http://"+ip+"/player_data_cache/get_log_player",
     GET_ID          :"http://"+ip+"/player_data_cache/get_id",
     SEND_SCORE      :"http://"+ip+"/player_data_memory/scores",
-    GET_LEADERBOARD :"http://"+ip+"/player_data_memory/leaderboard"
+    GET_LEADERBOARD :"http://"+ip+"/player_data_memory/leaderboard",
+    GET_ROOM        :"http://"+ip+"/player_data_cache/get_room"
 };
 
 // 初始化游戏
@@ -36,7 +37,7 @@ export const entities = {
 export let game_state = {
     bool: false,//调试用的，避免发送过多消息
     mode: 1,//单人模式还是双人模式。
-    name: "0",// 对的，暂时还不支持重复和空name，后续把id匹配上就好了。
+    name: "我是你大爷",// 对的，暂时还不支持重复和空name，后续把id匹配上就好了。
     room: 0, //是的这里的东西应该是可以修改的
     player_id: 0,//在第一次接收数据的时候由服务器生成，这里需要一个最小堆。
     team_member: "NULL",

@@ -17,7 +17,7 @@ async def get_id(data: Dict):
     except Exception as e:
         print(str(e))
         raise HTTPException(500, detail=str(e))
-    
+
 @router.post("/send_log")
 async def send_log(data: Dict):
     try:

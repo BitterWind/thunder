@@ -40,20 +40,19 @@ export async function data_request() {
 
 // 角色初始数据请求方法，
 export async function player_init() {//id , room ,
-    // console.warn('发送请求 :', typeof(JSON.stringify(team_member)));#可以优化的内容很多很多。
     try {
         const response = await fetch(CONFIG.GET_ID, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({"name":"guy", "mode":1, "obj":0})//string转换
         });
-        // 这里的result不是一个正常的东西需要进行转换
+        // 这里的result不是一个正常的东西需要进行转换,而且await中的东西不能直接当参数传递，需要额外处理
         const result = await response.json();
         // console.log('id_request return:', result);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         game_state.room = result.room
         game_state.id = result.id
-        console.log('id_request return:', game_state);
+        console.log('player_init return:', game_state);
 
         return result.id
     } catch (error) {
@@ -61,7 +60,7 @@ export async function player_init() {//id , room ,
     }
 }
 
-// 角色初始数据请求方法，
+// 角色初始数据发送方法，
 export async function send_score(score) {//id , room ,
     // console.warn('发送请求 :', typeof(JSON.stringify(team_member)));#可以优化的内容很多很多。
     try {

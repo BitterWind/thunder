@@ -45,7 +45,7 @@ async def submit_score(data: dict):
 @router.post("/leaderboard", 
            summary="查询排行榜（POST方法）",
            description="通过POST请求查询排行榜，支持分页和完整列表")
-async def leaderboard(request: dict):
+async def leaderboard():
     try:
         # 计算分页范围
         # start = (request["page"] - 1) * request["page_size"] #从第几页开始吗。

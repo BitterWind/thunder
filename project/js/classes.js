@@ -91,6 +91,37 @@ export class Player extends GameObject {
             direction
         ));
     }
+    draw(){
+        super.draw();
+        if (this.name ) {
+            const text = this.name;
+            const fontSize = 12;
+            const textPadding = 4;
+
+            // 设置文本样式
+            ctx.font = `${fontSize}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+
+            // 计算文本位置（角色上方）
+            const textX = this.position.x;
+            const textY = this.position.y - this.size / 2 - 5;
+
+            // 绘制文本背景（可选，增强可读性）
+            const textWidth = ctx.measureText(text).width;
+            ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+            ctx.fillRect(
+                textX - textWidth / 2 - textPadding,
+                textY - fontSize - textPadding,
+                textWidth + textPadding * 2,
+                fontSize + textPadding * 2
+            );
+
+            // 绘制文本
+            ctx.fillStyle = "white";
+            ctx.fillText(text, textX, textY);
+        }
+    }
 }
 
 //游戏逻辑实体 ： 子弹

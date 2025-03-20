@@ -151,18 +151,42 @@
         });
 
         // 退出游戏提示框
-        function showExitPrompt() {
+        async function showExitPrompt() {
             const modal = document.getElementById('exitModal');
             const scoreInfo = document.getElementById('scoreInfo');
 
-
-
-            // 获取当前用户分数和最高分
+            //获取当前用户分数和最高分
             const currentScore = game_state.score;
-            const maxScore = game_state.maxScore || 0;
+            const maxScore = "{{maxScore}}";
+            const username = "{{ username }}";
 
             // 更新最高分逻辑
             if (currentScore > maxScore) {
+                // 向后端发送分数更新请求
+                try {
+                    const response = await fetch('/scores', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            username: username,
+                            score: currentScore
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+
+                    const data = await response.json();
+                    console.log('分数更新成功:', data);
+
+
+                } catch (error) {
+                    console.error('更新分数失败:', error);
+                // 可以在这里显示错误提示
+                }
                 game_state.maxScore = currentScore;
                 scoreInfo.innerHTML = `你的当前分数：${currentScore}<br>恭喜！你创造了新的最高分：${currentScore}`;
             } else {

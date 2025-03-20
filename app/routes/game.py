@@ -35,7 +35,7 @@ async def login_page(request: Request, msg: str = None):
 @router.post("/scores", response_model=dict, status_code=201, summary="提交分数并返回排名")
 async def submit_score(data: Dict, db: Session = Depends(get_db)):
     try:
-        print(data)
+
         user_name = data.get("username")
         score = data.get("score")
 

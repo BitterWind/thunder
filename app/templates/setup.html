@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --neon-cyan: #00ffff;
+            --neon-red: #ff0066;
+            --neon-green: #00ff88;
+            --bg-dark: #0a0a1a;
+            --cyber-red: #ff0055;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-dark);
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .settings-container {
+            max-width: 600px;
+            margin: 0 auto;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+            background: rgba(0, 10, 20, 0.9);
+        }
+
+        .settings-section {
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-section::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent 45%,
+                var(--neon-cyan) 50%,
+                transparent 55%
+            );
+            opacity: 0.1;
+            animation: glow 8s linear infinite;
+        }
+
+        h2, h3 {
+            color: var(--neon-cyan);
+            margin: 0 0 20px 0;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            align-items: center;
+            gap: 15px;
+        }
+
+        label {
+            color: white !important;
+            font-size: 14px;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+
+        input[type="text"] {
+            padding: 8px 12px;
+            background: rgba(0, 20, 40, 0.8);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            border-radius: 4px;
+            width: 200px;
+        }
+
+        /* 自定义滑动条 */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* 自定义开关 */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #2a2a4a;
+            transition: .4s;
+            border-radius: 14px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--neon-green);
+        }
+
+        input:checked + .slider.red {
+            background-color: var(--neon-red);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        @keyframes glow {
+            0% { transform: rotate(0deg) translate(-50%, -50%); }
+            100% { transform: rotate(360deg) translate(-50%, -50%); }
+        }
+
+        .danger-zone {
+            border-color: var(--cyber-red);
+            animation: pulse-red 2s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 10px var(--cyber-red); }
+            50% { box-shadow: 0 0 20px var(--cyber-red); }
+            100% { box-shadow: 0 0 10px var(--cyber-red); }
+        }
+
+        .cyber-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, #002040, #004080);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+            cursor: pointer;
+        }
+
+        .cyber-button:hover {
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-container">
+        <div class="settings-section">
+            <h2>战备设置</h2>
+
+            <div class="form-group">
+                <h3>显示设置</h3>
+            </div>
+
+            <div class="form-group">
+                <label for="resolution">分辨率</label>
+                <input type="text" id="resolution" value="1920x1080">
+            </div>
+
+            <div class="form-group">
+                <label for="hdr">HDR效果</label>
+                <label class="switch">
+                    <input type="checkbox" id="hdr" checked>
+                    <span class="slider red"></span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <h3>音频配置</h3>
+            </div>
+
+            <div class="form-group">
+                <label for="main-volume">主音量</label>
+                <input type="range" id="main-volume" value="75">
+            </div>
+
+            <div class="form-group">
+                <label for="environment-sound">环境音效</label>
+                <label class="switch">
+                    <input type="checkbox" id="environment-sound" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="settings-section danger-zone">
+            <h2 class="settings-title" style="color:var(--cyber-red)">危险区域</h2>
+            <div class="form-group">
+                <input type="password" class="cyber-input" placeholder="输入确认密码">
+                <button class="cyber-button" style="background:linear-gradient(45deg, #ff0055, #800000)">立即销毁账号</button>
+            </div>
+        </div>
+        </div>
+    </div>
+</body>
+<script>
+        // 矩阵数字雨特效
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        let drops = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function initMatrix() {
+            resizeCanvas();
+            const fontSize = 14;
+            const columns = Math.floor(canvas.width / fontSize);
+
+            // 初始化下落位置
+            for(let i = 0; i < columns; i++) {
+                drops[i] = Math.floor(Math.random() * -canvas.height);
+            }
+
+            // 生成随机字符
+            function getRandomChar() {
+                return String.fromCharCode(0x30A0 + Math.random() * 96);
+            }
+
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 20, 30, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = var(--neon-blue);
+                ctx.font = fontSize + 'px monospace';
+
+                drops.forEach((drop, i) => {
+                    const text = getRandomChar();
+                    const x = i * fontSize;
+                    const y = drop * fontSize;
+
+                    // 主字符亮色
+                    ctx.fillStyle = var(--neon-blue);
+                    ctx.fillText(text, x, y);
+
+                    // 尾迹渐隐
+                    ctx.fillStyle = 'rgba(0, 255, 255, 0.2)';
+                    for(let j = 1; j < 4; j++) {
+                        ctx.fillText(text, x, y - j * fontSize);
+                    }
+
+                    if(y > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                });
+            }
+
+            setInterval(draw, 50);
+        }
+
+        // 开关控制
+        document.querySelectorAll('.cyber-switch').forEach(sw => {
+            sw.addEventListener('click', () => {
+                sw.classList.toggle('active');
+            });
+        });
+
+        // 初始化
+        window.addEventListener('resize', resizeCanvas);
+        initMatrix();
+    </script>
+</html>

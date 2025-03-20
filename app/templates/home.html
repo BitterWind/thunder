@@ -228,14 +228,30 @@
     // 页面加载时获取排行榜数据
     window.addEventListener('load', fetchLeaderboard);
 
-    // 跳转到 index.html
+    // 跳转到 game.html
         function navigateToIndex() {
             window.location.href = '/game';
         }
 
         function logout() {
+            // 调用后端的 /logout 接口
+            fetch('/logout', {
+                method: 'GET',
+                credentials: 'include' // 包含 cookies
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // 重定向到登录页面
+                        window.location.href = '/';
+                    } else {
+                        console.error('退出登录失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('退出登录请求失败:', error);
+                });
 
-            window.location.href = '/';
+            
         }
     </script>
 </body>

@@ -142,7 +142,7 @@
             <div class="cyber-card" onclick="showCreateRoom()">
                 <h2 style="color: var(--hologram-purple)">🛸 创建虫洞</h2>
                 <p>建立私人竞技空间</p>
-                <div class="cyber-button" style="margin-top:1rem">生成量子房间</div>
+                <div class="cyber-button" style="margin-top:1rem" onclick="creatRoom()">生成量子房间</div>
             </div>
 
             <!-- 实时排行榜 -->
@@ -231,6 +231,10 @@
     // 跳转到 game.html
         function navigateToIndex() {
             window.location.href = '/game';
+        }
+
+        function creatRoom() {
+            window.location.href = '/room';
         }
 
         function logout() {

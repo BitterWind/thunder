@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
 from database import Base
 from sqlalchemy.orm import relationship
 
@@ -13,6 +13,7 @@ class User(Base):
     room_id = Column(Integer, ForeignKey('rooms.id'))  # 新增关联字段
     # 添加关系
     room = relationship("Room", back_populates="users", foreign_keys=[room_id])
+    ready_status = Column(Boolean, default=False)  # 新增准备状态字段
 
     def to_dict(self):
         return {

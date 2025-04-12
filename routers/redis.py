@@ -1,6 +1,5 @@
 #this file is someting about player data and the operation of data 
 from fastapi import APIRouter, HTTPException
-from models.schemas import score_submit, leaderboard_entry
 from data_bases.redis import get_redis
 from services.game_service import game_service
 from typing import List,Dict

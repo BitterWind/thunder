@@ -1,5 +1,5 @@
 //类的实现。
-import { CONFIG, entities , game_state, canvas, ctx } from './config.js';
+import { CONFIG, entities , game_data, canvas, ctx } from './config.js';
 
 //position
 export class Vector2 {
@@ -57,9 +57,9 @@ export class Player extends GameObject {
         this.speed = CONFIG.PLAYER_SPEED;//速度
         this.keyMouse=new KeyMouse(false,false,false,false,false);//player对应单独键盘监听系统
         this.mouse=new Vector2(0,0);
-        this.id=game_state.id; 
-        this.room=game_state.room; 
-        this.name=game_state.name;//后面需要让name在图标的头顶标记着。
+        this.id=game_data.id; 
+        this.room=game_data.room; 
+        this.name=game_data.name;//后面需要让name在图标的头顶标记着。
         this.shooter_cnt=0;//双人模式下用来实时同步血量，对的这里的护卫机也是血量的表现。
     }
 
@@ -72,7 +72,7 @@ export class Player extends GameObject {
         this.position.x = Math.max(CONFIG.PLAYER_SIZE/2, Math.min(canvas.width-CONFIG.PLAYER_SIZE/2, this.position.x));//限制位置不超过左右边界
         this.position.y = Math.max(CONFIG.PLAYER_SIZE/2, Math.min(canvas.height-CONFIG.PLAYER_SIZE/2, this.position.y));//上下边界
         // // 结构化日志输出
-        // if(game_state.time_cnt==60)console.log('%c核心状态:', 'color: #2ecc71; font-weight: bold', {
+        // if(game_data.time_cnt==60)console.log('%c核心状态:', 'color: #2ecc71; font-weight: bold', {
         //     position: `(${this.position.x}, ${this.position.y})`,
         //     velocity: `px/frame`
         // });浏览器inspect居然有控制台？！
@@ -136,7 +136,7 @@ export class Bullet extends GameObject {
         this.trail=[]; // 弹道轨迹缓存，可以制造拖尾效果
     }
 
-    update(deltaTime) {
+    update() {
         this.position.x += this.direction.x * this.speed;
         this.position.y += this.direction.y * this.speed;
         this.trail.push({...this.position});
@@ -155,7 +155,6 @@ export class Enemy extends GameObject {
         );
         this.speed = 200 + Math.random()*100;
     }
-
     update(deltaTime) {
         this.position.y += this.speed * deltaTime;
         if(this.active) this.active = ( this.position.y < canvas.height + 20 );
@@ -176,7 +175,7 @@ export class Shooter extends GameObject {
         this.angle = 0.00;//弧度
     }
 
-    update(deltaTime) {
+    update() {
         this.position.x = entities.players[this.belong].position.x + CONFIG.SHOOTER_RIDUS * Math.cos(this.angle);
         this.position.y = entities.players[this.belong].position.y + CONFIG.SHOOTER_RIDUS * Math.sin(this.angle);
         this.angle += CONFIG.SHOOTER_SPEED/60;//弧度

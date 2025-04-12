@@ -4,32 +4,37 @@ from typing import Dict, Any
 
 #for player data storage , 
 @dataclass
-class game_state:
-    players: Dict[str, Any] 
+class PositionStruct:
+    def __init__(self, data):
+        self.x = data['x']
+        self.y = data['y']
 
-#cache data 
-class player_data(BaseModel):
-    id: int 
-    position: dict
-    size: int
-    active: bool
-    speed: int
-    key_mouse: dict
-    mouse: dict
-    shooter_cnt: int
+class KeyMouseStruct:
+    def __init__(self, data):
+        self.KeyA = data['KeyA']
+        self.KeyS = data['KeyS']
+        self.KeyW = data['KeyW']
+        self.KeyD = data['KeyD']
+        self.Mouse = data['Mouse']
 
-#memory data
-class other_player_data(BaseModel):
-    id : int 
-    name : str
-    color : str
-    score : int 
+class MouseStruct:
+    def __init__(self, data):
+        self.x = data['x']
+        self.y = data['y']
+        
+# ”类“一类的东西就用驼峰好了
+class PlayerStruct:
+    def __init__(self, data):
+        self.name = data['name']
+        self.id = data['id']
+        self.position = PositionStruct(data['position'])  # 嵌套结构体
+        self.size = data['size']
+        self.color = data['color']
+        self.active = data['active']
+        self.speed = data['speed']
+        self.key_mouse = KeyMouseStruct(data['key_mouse'])  # 嵌套结构体
+        self.mouse = MouseStruct(data['mouse'])  # 嵌套结构体
+        self.shooter_cnt = data['shooter_cnt']
 
-class score_submit(BaseModel):
-    user_id: str
-    score: float
-
-class leaderboard_entry(BaseModel):
-    user_id: str
-    score: float
-    rank: int
+    def __repr__(self):
+        return f"PlayerStruct(name={self.name}, id={self.id}, position=({self.position.x}, {self.position.y}))"

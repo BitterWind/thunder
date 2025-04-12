@@ -1,4 +1,4 @@
-import { entities } from './config.js';
+import { entities, game_data } from './config.js';
 
 export function initInput(canvas) {
 
@@ -36,4 +36,13 @@ export function onKeyUp(e){
     if (e.code === 'KeyD') entities.players[0].keyMouse.KeyD = false;
     if (e.code === 'KeyW') entities.players[0].keyMouse.KeyW = false;
     if (e.code === 'KeyS') entities.players[0].keyMouse.KeyS = false;
+}
+
+export function init(){
+    // 获取存储数据
+    const storageData = JSON.parse(sessionStorage.getItem('game_data'));
+    
+    game_data.id        = storageData.game_data.id;
+    game_data.room             = storageData.game_data.room;
+    game_data.name             = storageData.game_data.name;
 }

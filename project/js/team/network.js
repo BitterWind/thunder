@@ -38,18 +38,15 @@ export async function leaderboard_request() {//id , room ,
 }
 
 // 数据发送方法
-export async function data_send(player_data) {
-    console.log('data_send :', entities.players);
+export async function data_send(data) {
+    console.log('data_send :', data);
     const response = await fetch(CONFIG.SEND_DATA, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(player_data)//string转换
+        body: JSON.stringify(data)//string转换
     });
-    
     // if(game_data.time_cnt==60)console.log('data_send Response:', player_data);
-
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
 }
 
 // 数据请求方法

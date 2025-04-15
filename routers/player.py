@@ -34,6 +34,6 @@ async def send_log(data: Dict):
 @router.post("/get_log_player")
 async def get_log(data: Dict):
     print(f"\n收到请求数据：{data}")
-    ans = await game_service.get_player_log(data.get("name"))
+    ans = await game_service.get_player_log(data['id'])
     print(f"返回数据{ans}")
     return ans

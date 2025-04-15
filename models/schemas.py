@@ -32,9 +32,9 @@ class Player:
 
 
     def __repr__(self):
-        return f"PlayerStruct(name={self.name}, id={self.id}, position=({self.position.x}, {self.position.y}))"
+        return f"PlayerStruct(name={self.name}, id={self.id}, position=({self.position['x']}, {self.position['y']}))"
     def data(self):
-        return {
+        return dict({
             "name": self.name,
             "id": self.id,
             "position": self.position,
@@ -47,7 +47,7 @@ class Player:
             "mouse": self.mouse,
             "shooter_cnt": self.shooter_cnt,
             "start": self.start
-        }
+        })
     
     def update(
             self,

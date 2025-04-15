@@ -45,8 +45,11 @@ export async function data_send(player_data) {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(player_data)//string转换
     });
+    
     // if(game_data.time_cnt==60)console.log('data_send Response:', player_data);
+
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
 }
 
 // 数据请求方法
@@ -58,11 +61,12 @@ export async function data_request() {
     });
     // console.warn('乱七八糟MouseMove', e);
     const result = await response.json();
-    console.log('data of players request:', entities.players);
+    // console.log('data of players request:', entities.result);
     entities.players[1].position=result.position;
+    entities.players[1].keyMouse=result.key_mouse;
+    entities.players[1].Mouse=result.mouse;
 
     // if(game_data.time_cnt==60)console.log('data_request return:', entities.players[1]);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     // console.warn('请求返回:', response);
     return result
 }

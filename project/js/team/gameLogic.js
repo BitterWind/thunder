@@ -86,6 +86,8 @@ export function gameLoop(timestamp) {
     entities.enemies.forEach(e => e.draw());
     entities.shooters1.forEach(s => s.draw());
     entities.shooters2.forEach(s => s.draw());
+    // data_send(entities.players[0]);
+    // data_request();
     game_data.time_cnt++;
     if(game_data.time_cnt==122){
         game_data.time_cnt=0;

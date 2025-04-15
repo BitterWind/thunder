@@ -82,4 +82,25 @@ if __name__ == "__main__":
     players  =   {}
     players[0] = Player(name="JohnDoe", id=1)
     # Print the player's initial data
-    print("Initial Player Data:", players.data())
+    # print(players[0].data())
+    data = {'position': {'x': 583.3500000000001, 'y': 275.10000000000014},
+             'size': 30, 'color': 'hsl(358.7054177857062, 70%, 60%)',
+               'active': True, 'speed': 500,
+                 'keyMouse': {'KeyA': False, 'KeyS': False, 'KeyW': False, 'KeyD': False, 'Mouse': False},
+                   'mouse': {'x': 650, 'y': 770},
+                   'id': 1, 'room': 1, 'name': 'default_name', 'shooter_cnt': 8}
+    players[1] = Player(name=data['name'], id=data['id'], room=data['room'])
+    players[1].update(
+        position=data['position'],
+        size=data['size'],
+        color=data['color'],
+        active=data['active'],
+        speed=data['speed'],
+        key_mouse=data['keyMouse'],
+        mouse=data['mouse'],
+        shooter_cnt=data['shooter_cnt'],
+        start=0
+    )
+    # Print the updated player's data
+    print(players[1].data())
+#踏实一点，小朋友。

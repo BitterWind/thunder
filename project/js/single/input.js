@@ -6,7 +6,6 @@ export function initInput(canvas) {
     window.addEventListener('keydown', e => onKeyDown(e));
     window.addEventListener('keyup', e => onKeyUp(e));
     canvas.addEventListener('mousedown', e => {
-        // console.log('乱七八糟MouseDown', e);
         entities.players[0].keyMouse.Mouse = true;
         entities.players[0].mouse.x=e.clientX;
         entities.players[0].mouse.y=e.clientY;

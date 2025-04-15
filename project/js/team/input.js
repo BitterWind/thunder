@@ -10,7 +10,6 @@ export function initInput(canvas) {
         leave_room();
     });
     canvas.addEventListener('mousedown', e => {
-        // console.log('乱七八糟MouseDown', e);
         entities.players[0].keyMouse.Mouse = true;
         entities.players[0].mouse.x=e.clientX;
         entities.players[0].mouse.y=e.clientY;
@@ -20,11 +19,10 @@ export function initInput(canvas) {
         entities.players[0].keyMouse.Mouse = false;
     });
     canvas.addEventListener('mousemove', e => {//这是个类似于 lambda的简单内嵌函数。
-        // console.log('乱七八糟MouseMove', e);
+        // console.log('乱七八糟MouseMove', entities.players[0]);
         entities.players[0].mouse.x=e.clientX;
         entities.players[0].mouse.y=e.clientY;
     });
-
 }
 
 //键盘事件检测

@@ -14,15 +14,17 @@ class GameService:
         self.player_log[0] = Player()
 
     async def update_player_log(self, data: dict) -> int:
+        print(f"update_player_log: {data}") 
         self.player_log[int(data["id"])].update(
             position=dict(data["position"]), 
-            key_mouse=dict(data["key_mouse"]),
+            key_mouse=dict(data["keyMouse"]),
             mouse=dict(data["mouse"]),
             shooter_cnt=int(data["shooter_cnt"]),
             )
         return 1
 
     async def get_player_log(self, id: int) -> dict:
+        print(f"get_player_log data: {id}")
         return self.player_log[id].data()
 
     #在这里初始化服务器的一个玩家

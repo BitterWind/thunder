@@ -1,0 +1,88 @@
+<!-- lobby.html 大厅页面 -->
+<!-- 该页面是游戏大厅的入口，玩家可以选择单人模式、创建房间、随机加入房间或加入指定房间。 -->
+<!-- 通过按钮点击事件，调用相应的函数来处理玩家的选择。 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>游戏大厅</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #2c3e50;
+            color: white;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .button {
+            padding: 15px 30px;
+            margin: 10px;
+            background: #3498db;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .button:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <button class="button" id="directStartBtn">单人模式</button>
+    <button class="button" id="createBtn">创建房间</button>
+    <button class="button" id="joinBtn">随机加入</button>
+    <button class="button" id="directJoinBtn">加入指定房间</button>
+    <input type="text" id="roomInput" placeholder="输入房间号" class="button" style="width: 200px;">
+    <input type="text" id="name" placeholder="名称" class="button" style="width: 200px;">
+    <script type="module">
+        import { get_id, get_room_update} from './js/lobby_network.js';
+        import { game_data} from './js/lobby_config.js';
+        let name = 'default_name'
+        let room = -1
+        let mode  =  5
+        // 获取输入框的值
+        document.getElementById('name').addEventListener('input', (event) => {
+            name = event.target.value
+            game_data.name = name
+            console.log(name);
+        })
+        // 获取房间号的值
+        document.getElementById('roomInput').addEventListener('input', (event) => {
+            room = event.target.value
+            console.log(room);
+        })
+        // 直接开始
+        document.getElementById('directStartBtn').addEventListener('click', () => {
+            mode=1
+            get_id(name,mode)
+            // console.log(sessionStorage);
+            // console.log(game_data);
+        })
+        // 创建房间
+        document.getElementById('createBtn').addEventListener('click', () => {
+            mode=2
+            get_id(name,mode)
+        })
+        // 随机加入
+        document.getElementById('joinBtn').addEventListener('click', () => {
+            mode=3
+            get_id(name,mode)
+
+        })
+        // 指定房间加入
+        document.getElementById('directJoinBtn').addEventListener('click', () => {
+            mode=4
+            // console.log(typeof(parseInt(document.getElementById('roomInput').value.toUpperCase())))
+            // 假设存在一个房间
+            get_id(name,mode,room)
+        })
+    </script>
+</body>
+</html>

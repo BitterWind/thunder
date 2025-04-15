@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>雷霆战机 - 主战场</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --cyber-green: #0fff50;
+            --hologram-purple: #bd00ff;
+            --matrix-bg: rgba(0, 20, 30, 0.95);
+        }
+
+        body {
+            margin: 0;
+            background: var(--matrix-bg);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 动态数字雨背景 */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .cyber-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(0, 40, 60, 0.8);
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 30px var(--neon-blue);
+            border-radius: 15px;
+        }
+
+        .cyber-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: linear-gradient(90deg, #001020, #002040);
+            border-bottom: 2px solid var(--cyber-green);
+        }
+
+        .cyber-title {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--neon-blue), var(--cyber-green));
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .cyber-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .cyber-card {
+            background: rgba(0, 20, 30, 0.9);
+            border: 2px solid var(--hologram-purple);
+            padding: 2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px var(--hologram-purple);
+        }
+
+        .cyber-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(45deg, #002040, #004080);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .cyber-button:hover {
+            background: linear-gradient(45deg, #004080, #0080ff);
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: scale(1.05);
+        }
+
+        /* 排行榜样式 */
+        .leaderboard {
+            list-style: none;
+            padding: 0;
+        }
+
+        .leaderboard li {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(0, 30, 50, 0.7);
+            border-left: 4px solid var(--cyber-green);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+
+    <nav class="cyber-nav">
+        <div class="cyber-title">雷霆战机</div>
+        <div>
+            <span class="cyber-button" style="margin-right:1rem">👤 {{ username }}</span>
+            <button class="cyber-button">🚪 退出战场</button>
+        </div>
+    </nav>
+
+    <div class="cyber-container">
+        <div class="cyber-grid">
+            <!-- 开始匹配 -->
+            <div class="cyber-card" onclick="startMatchmaking()">
+                <h2 style="color: var(--cyber-green)">⚡ 量子匹配</h2>
+                <p>进入全球实时对战队列</p>
+                <div class="cyber-button" style="margin-top:1rem">启动匹配引擎</div>
+            </div>
+
+            <!-- 创建房间 -->
+            <div class="cyber-card" onclick="showCreateRoom()">
+                <h2 style="color: var(--hologram-purple)">🛸 创建虫洞</h2>
+                <p>建立私人竞技空间</p>
+                <div class="cyber-button" style="margin-top:1rem">生成量子房间</div>
+            </div>
+
+            <!-- 实时排行榜 -->
+            <div class="cyber-card">
+                <h2 style="color: var(--neon-blue)">🏆 维度排行榜</h2>
+                <ul class="leaderboard">
+                    {% for user in leaderboard %}
+                    <li>
+                        <span>#{{ loop.index }} {{ user.name }}</span>
+                        <span>{{ user.rating }} ⚡</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 数字雨背景动画
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = '01';
+        const drops = [];
+
+        // 初始化数字雨
+        for(let i = 0; i < 100; i++) {
+            drops[i] = Math.random() * canvas.height;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 20, 30, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+
+            drops.forEach((drop, index) => {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(char, index * 20, drop);
+                if(drop > canvas.height && Math.random() > 0.975) drops[index] = 0;
+                drops[index] += 10;
+            });
+        }
+
+        setInterval(drawMatrix, 50);
+
+        // 按钮交互效果
+        document.querySelectorAll('.cyber-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+    </script>
+</body>
+</html>

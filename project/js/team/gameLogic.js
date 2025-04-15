@@ -1,6 +1,6 @@
 import { entities, CONFIG, canvas, ctx, game_data } from './config.js';
 import { Enemy, Shooter} from './classes.js';
-import { send_score, leaderboard_request} from './network.js';
+import { send_score, data_send, data_request} from './network.js';
 
 export let lastFrameTime = 0;
 export let lastFireTime = 0;
@@ -40,23 +40,16 @@ export function gameLoop(timestamp) {
     ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height); 
     
-    //只有在双人模式的时候需要传送数据
-    if(game_data.mode ==2 ){//&& Bool
-        data_send(entities.players[0]);
-        data_request();
-        // Bool=!Bool;
-    }
+
     // 发射子弹
     if (timestamp - lastFireTime > CONFIG.FIRE_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
         if(entities.players[0].keyMouse.Mouse){
             entities.players[0].fire();
-            entities.Shooters1.forEach(s => s.fire());
+            entities.shooters1.forEach(s => s.fire());
         }
-        if(game_data.mode==2){
-            if (entities.players[1].keyMouse.Mouse){ //&&fire
-                entities.players[1].fire();
-                entities.shooters2.forEach(s => s.fire());
-            }
+        if (entities.players[1].keyMouse.Mouse){ //&&fire
+            entities.players[1].fire();
+            entities.shooters2.forEach(s => s.fire());
         }
         lastFireTime = timestamp;
     }
@@ -64,22 +57,20 @@ export function gameLoop(timestamp) {
     if ( timestamp - lastAddTime > CONFIG.ADD_SHOOTER_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
         lastAddTime = timestamp;
         if(entities.players[0].shooter_cnt <= CONFIG.SHOOTER_LIMIT ){
-            entities.Shooters1.push(new Shooter(0));//接下来要加个玩家。
+            entities.shooters1.push(new Shooter(0));//接下来要加个玩家。
             entities.players[0].shooter_cnt++;
         }
-        if(game_data.mode==2 ){
-            if(entities.players[1].shooter_cnt <= CONFIG.SHOOTER_LIMIT ){
-                entities.shooters2.push(new Shooter(1));//接下来要加个玩家。
-                entities.players[1].shooter_cnt++;
-            }
+        if(entities.players[1].shooter_cnt <= CONFIG.SHOOTER_LIMIT ){
+            entities.shooters2.push(new Shooter(1));//接下来要加个玩家。
+            entities.players[1].shooter_cnt++;
         }
     }
     // 更新实体
     updateEntities(entities.bullets, deltaTime);
     updateEntities(entities.enemies, deltaTime);
     updateEntities(entities.players, deltaTime);
-    updateEntities(entities.Shooters1, deltaTime);
-    if(game_data.mode==2)updateEntities(entities.shooters2, deltaTime);
+    updateEntities(entities.shooters1, deltaTime);
+    updateEntities(entities.shooters2, deltaTime);
 
     // 生成敌人
     if (Math.random() < CONFIG.ENEMY_SPAWN_RATE) {
@@ -93,14 +84,16 @@ export function gameLoop(timestamp) {
     entities.players.forEach(p => p.draw());
     entities.bullets.forEach(b => b.draw());
     entities.enemies.forEach(e => e.draw());
-    entities.Shooters1.forEach(s => s.draw());
-    if(game_data.mode==2)entities.shooters2.forEach(s => s.draw());
+    entities.shooters1.forEach(s => s.draw());
+    entities.shooters2.forEach(s => s.draw());
     game_data.time_cnt++;
-    if(game_data.time_cnt==61){
+    if(game_data.time_cnt==122){
         game_data.time_cnt=0;
         // update_leader_board();
         send_score(game_data.score);
-        leaderboard_request();
+        data_send(entities.players[0]);
+        data_request();
+        // leaderboard_request();
         console.log('user data', game_data);
     }
     requestAnimationFrame(gameLoop);//在此调用自身，并将时间作为参数回传

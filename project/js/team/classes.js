@@ -155,7 +155,6 @@ export class Enemy extends GameObject {
         );
         this.speed = 200 + Math.random()*100;
     }
-
     update(deltaTime) {
         this.position.y += this.speed * deltaTime;
         if(this.active) this.active = ( this.position.y < canvas.height + 20 );

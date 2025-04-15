@@ -76,4 +76,10 @@ class Player:
         self.mouse = mouse if mouse is not None else self.mouse
         self.shooter_cnt = shooter_cnt if shooter_cnt is not None else self.shooter_cnt
         self.start = start if start is not None else self.start
-        
+
+if __name__ == "__main__":
+    # Create a new player instance
+    players  =   {}
+    players[0] = Player(name="JohnDoe", id=1)
+    # Print the player's initial data
+    print("Initial Player Data:", players.data())

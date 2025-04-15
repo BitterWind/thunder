@@ -1,5 +1,7 @@
 // 全局游戏配置, 一些与房间无关的东西，每房间都是一样的。
-let ip = "127.0.0.1:8000"
+
+import { ip as IP } from '../lobby_config.js';
+let ip = IP;
 export const CONFIG = {
     PLAYER_SIZE         :30,
     BULLET_SPEED        :12,
@@ -17,7 +19,6 @@ export const CONFIG = {
     SEND_SCORE          :"http://"+ip+"/player_data_memory/scores",
     GET_LEADERBOARD     :"http://"+ip+"/player_data_memory/leaderboard",
     GET_ROOM            :"http://"+ip+"/room_data_cache/get_room",
-    GET_ROOM_UPDATE     :"http://"+ip+"/room_data_cache/get_room_update",
 };
 
 // 初始化游戏
@@ -30,7 +31,7 @@ export const entities = {
     players: [],
     bullets: [],
     enemies: [],
-    Shooters1: [],
+    shooters1: [],
     shooters2: []
 };
 

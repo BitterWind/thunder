@@ -41,7 +41,6 @@
     <div class="room-panel">
         <h2 id="roomIdDisplay">房间号：加载中...</h2>
         <div id="playerCount">玩家人数：加载中...</div>
-        <div id="playerCountFormatted">当前玩家数量：<span id="playerCountValue">加载中...</span></div>
         <div class="player-list" id="playerList"></div>
         <div id="countdown"></div>
         <button class="button" id="startGameBtn" style="display: none;">开始游戏</button>
@@ -49,19 +48,22 @@
     </div>
 
     <script type="module">
-        import { get_room_update, leave_room, start_game } from './js/lobby_network.js';
+        import { get_room_update, leave_room, start_room } from './js/lobby_network.js';
         import { game_data } from './js/lobby_config.js'
         let player_cnt=1;
         // 更新玩家数量显示
-        document.getElementById('playerCountValue').textContent = player_cnt;
         // 房间状态管理, 
         class RoomState {
             constructor() {
                 const storageData = JSON.parse(sessionStorage.getItem('game_data'));
                 console.log(storageData);
-                this.roomId = storageData.game_data.room;
+                this.room = storageData.game_data.room;
+                game_data.room = this.room;
                 this.player_name = storageData.game_data.name;
+                game_data.name = this.player_name;
                 this.id   = storageData.game_data.id
+                game_data.id = this.id;
+                game_data.team_member = storageData.game_data.team_member;
                 this.isHost = JSON.parse(sessionStorage.getItem('is_host'));
                 this.updateInterval = null;
             }
@@ -74,61 +76,80 @@
 
             renderBaseInfo() {
                 document.getElementById('roomIdDisplay').textContent = 
-                    `房间号：${this.roomId} ${this.isHost ? '(房主)' : '(成员)'}`;
+                    `房间号：${this.room} ${this.isHost ? '(房主)' : '(成员)'}`;
                 document.getElementById('startGameBtn').style.display = 
                     this.isHost ? 'block' : 'none';
             }
 
             setupEventListeners() {
-                // 开始游戏按钮（仅房主可见）
+                // 修正开始游戏按钮逻辑
                 document.getElementById('startGameBtn').addEventListener('click', async () => {
-                    leave_room(this.roomId);
+                    // 根据服务器返回状态判断
+                    if (game_data.ready == 1) {
+                        await start_room();//调整房主的start状态    
+                    }
+                    else if (game_data.ready == 0) {
+                        if (confirm('当前没有队友，是否以单人模式开始？')) {
+                            clearInterval(this.updateInterval);
+                            await leave_room();
+                            window.location.href = 'index_single.html';
+                        }
+                    }
                 });
 
-                // 退出房间按钮
+                // 优化退出房间逻辑
                 document.getElementById('exitRoomBtn').addEventListener('click', async () => {
-                    if (await leave_room(this.roomId)) {
-                        leave_room(this.roomId);
+                    if(await leave_room()) {
                         window.location.href = 'lobby.html';
                     }
                 });
 
                 // 页面关闭处理， 妈的，人类的时代已经结束了。
                 window.addEventListener('beforeunload', () => {
-                    leave_room(this.roomId);
+                    if(game_data.start==0)leave_room();
                 });
             }
 
             async startRoomUpdates() {
                 this.updateInterval = setInterval(async () => {
-                    await get_room_update(this.id, this.roomId);
-                    this.checkGameStart();
+                    await get_room_update( this.id, this.room);
+                    console.log('更新房间状态...',game_data);
                     this.updatePlayer();
-                }, 5000); // 每0.5秒更新一次
+                    if(game_data.start) {
+                        clearInterval(this.updateInterval);
+                        // console.log('开始游戏...',game_data);
+                        window.location.href = 'index_team.html';
+                    }
+                }, 1000); // 实际设置为1秒
             }
 
             updatePlayer() {
                 const listElement = document.getElementById('playerList');
-                players = []
-                players.append({name:game_data.name, id:game_data.id, ready:true});
-                players.append({name:game_data.team_member.name, id:game_data.team_member.id, ready:game_data.ready});
+                const players = [
+                    { 
+                        name: game_data.name, 
+                        id: game_data.id,
+                        ready: game_data.ready  // 当前玩家自己的准备状态
+                    },
+                    game_data.ready == 1 ? 
+                        { 
+                            name: game_data.team_member.name, 
+                            id: game_data.team_member.id,
+                            ready: game_data.ready  // 需要从服务器获取队友的 ready 状态
+                        } : 
+                        null
+                ].filter(Boolean);
+
                 listElement.innerHTML = players.map(player => `
                     <div class="player-card">
-                        <div>${player.name}</div>
-                        <div>${player.id}</div>
-                        <div>${player.ready ? '✅' : '❌'}</div>
+                        <div>名称: ${player.name}</div>
+                        <div>ID: ${player.id}</div>
+                        <div>${player.ready ? '✅' : '❌'}</div>  <!-- 修正这里 -->
                     </div>
                 `).join('');
-                
-                document.getElementById('playerCount').textContent = 
-                    `玩家人数：${game_data.ready+1}/2`;
-            }
 
-            checkGameStart() {
-                if (game_data.ready) {
-                    clearInterval(this.updateInterval);
-                    window.location.href = 'index_team.html';
-                }
+                document.getElementById('playerCount').textContent = 
+                    `玩家人数：${players.length}/2`;
             }
         }
 

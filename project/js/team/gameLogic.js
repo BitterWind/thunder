@@ -90,6 +90,7 @@ export function gameLoop(timestamp) {
     // data_request();
     game_data.time_cnt++;
     if(game_data.time_cnt==122){
+        console.log('game_data:', entities.players);
         game_data.time_cnt=0;
         // update_leader_board();
         send_score(game_data.score);

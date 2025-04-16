@@ -58,10 +58,11 @@ export async function data_request() {
     });
     // console.warn('乱七八糟MouseMove', e);
     const result = await response.json();
-    // console.log('data of players request:', entities.result);
+    console.log('data of players request:', result);
+    console.log('Mouse now of player 1', result.mouse);
     entities.players[1].position=result.position;
     entities.players[1].keyMouse=result.key_mouse;
-    entities.players[1].Mouse=result.mouse;
+    entities.players[1].mouse=result.mouse;
 
     // if(game_data.time_cnt==60)console.log('data_request return:', entities.players[1]);
     // console.warn('请求返回:', response);

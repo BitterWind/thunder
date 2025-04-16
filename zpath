@@ -8,3 +8,10 @@ cd E:\tools\redis
 redis-server.exe redis.windows.conf
 
 启动widnows的redis数据库服务
+
+service redis start
+
+启动ubuntu的redis数据库服务
+
+
+http://150.158.190.62:80/project/lobby.html

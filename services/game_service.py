@@ -68,6 +68,8 @@ class GameService:
                 # print(f"当前房间列表：{self.room_list}")
                 # print(f"room 类型{type(room)}")
                 # print(f"room_list[room]: {self.room_list[int(room)]}")
+                if room not in self.room_list:
+                    return -1
                 if(self.room_list[room]["y"]!=0):
                     ans = -1 #出错了，例外优先处理 
                 else:

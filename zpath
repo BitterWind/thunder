@@ -13,5 +13,7 @@ service redis start
 
 启动ubuntu的redis数据库服务
 
+source activate thunder
+cd thunder/
 
 http://150.158.190.62:80/project/lobby.html

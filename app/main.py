@@ -3,12 +3,15 @@ from fastapi.staticfiles import StaticFiles
 from routes.auth import router as auth_router
 from routes.game import router as game_router
 from routes.sse import router as sse_router
+from routes.multiGame import router as multiGame_router
 from database import Base, engine
 from starlette.middleware.sessions import SessionMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from services.room_cleaner import room_cleanup  # 导入清理函数
+import asyncio
+import uvicorn
 
 Base.metadata.create_all(bind=engine)
 
@@ -38,6 +41,7 @@ app.include_router(auth_router)
 app.include_router(game_router)
 
 app.include_router(sse_router)
+app.include_router(multiGame_router)
 
 # 挂载静态文件
 app.mount("/static", StaticFiles(directory="./static"), name="static")
@@ -60,4 +64,20 @@ async def startup_event():
     scheduler.add_job(room_cleanup, 'interval', minutes=5)
     scheduler.start()
 
+'''
+def run_app(port):
+    asyncio.run(uvicorn.run(app, host="127.0.0.1", port=port))
+
+if __name__ == "__main__":
+    # 在端口8000和8001上启动FastAPI应用程序
+    run_app(8000)
+    run_app(8001)'''
+
+import subprocess
+
+# 运行第一个进程（端口8000）
+subprocess.Popen(["uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8000"])
+
+# 运行第二个进程（端口8001）
+subprocess.Popen(["uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8001"])
 

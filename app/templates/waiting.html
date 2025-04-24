@@ -263,7 +263,7 @@
 
     //离开房间
     async function leaveRoom(){
-         try {
+        try {
             const response = await fetch(`/leave-room`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'}
@@ -275,6 +275,33 @@
             console.error('离开房间失败:', error);
         }
     }
+
+
+    let checkInterval;
+
+    // 启动状态轮询
+    function startStatusCheck(roomId) {
+        checkInterval = setInterval(async () => {
+            try {
+
+                const response = await fetch(`/room/${roomId}/status`);
+                const room = await response.json();
+                const status = room.status;
+
+                if (status === "in_game") {
+                    window.location.href = `/multiGame?room=${roomId}&game=${roomId}`;
+                }
+            } catch (error) {
+                console.error("状态检测失败:", error);
+            }
+        }, 2000);  // 每2秒检测一次
+    }
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', () => {
+
+        startStatusCheck(roomId);
+    });
 </script>
 </body>
 </html>

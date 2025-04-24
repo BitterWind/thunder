@@ -119,15 +119,15 @@
     </div>
 
     <!-- 按依赖顺序加载模块 -->
-    <script type="module" src="/static/js/config.js"></script>
-    <script type="module" src="/static/js/classes.js"></script>
-    <script type="module" src="/static/js/input.js"></script>
-    <script type="module" src="/static/js/network.js"></script>
-    <script type="module" src="/static/js/gameLogic.js"></script>
-    <script type="module" src="/static/js/main.js"></script>
+    <script type="module" src="/static/js/single/config.js"></script>
+    <script type="module" src="/static/js/single/classes.js"></script>
+    <script type="module" src="/static/js/single/input.js"></script>
+    <script type="module" src="/static/js/single/network.js"></script>
+    <script type="module" src="/static/js/single/gameLogic.js"></script>
+    <script type="module" src="/static/js/single/main.js"></script>
 
     <script type="module">
-        import { game_state } from '/static/js/config.js';
+        import { game_state } from '/static/js/single/config.js';
         // 确保 game_state 是全局变量
         window.game_state = game_state;
 

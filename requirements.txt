@@ -16,3 +16,4 @@ requests
 starlette == 0.46.1
 apscheduler
 sse_starlette
+websockets

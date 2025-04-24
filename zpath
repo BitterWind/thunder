@@ -17,3 +17,5 @@ source activate thunder
 cd thunder/
 
 http://150.158.190.62:80/project/lobby.html
+
+127.0.0.1:80

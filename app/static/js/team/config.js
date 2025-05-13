@@ -32,7 +32,9 @@ export const entities = {
     bullets: [],
     enemies: [],
     shooters1: [],
-    shooters2: []
+    shooters2: [],
+    shooters3: [],
+    shooters4: []
 };
 
 // 游戏配置
@@ -51,6 +53,8 @@ export let game_data = {
 // 添加 game_state 的定义和导出
 // 修改为4人状态配置
 export let game_state = {
+    score: 0,
+    maxScore: 0,
     players: [ // 数组长度改为4
         { id: 1, score: 0, active: true },
         { id: 2, score: 0, active: true },

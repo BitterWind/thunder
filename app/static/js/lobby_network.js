@@ -30,6 +30,7 @@ export async function get_id(name, mode, room=-1) {//player id , mode, 指定房
         game_data.mode  = mode;
         game_data.name  = name;
         sessionStorage.setItem('game_data', JSON.stringify(game_data)); //这是个异步函数，时间上需要放到同一个函数中，保证异步运行单线程程序，否则时间上的数据结构会混乱。
+
         switch (mode) {
             case 2: sessionStorage.setItem('is_host',true); break;//创建房间
             case 3: sessionStorage.setItem('is_host',false); break;//随机匹配

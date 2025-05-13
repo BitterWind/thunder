@@ -1,4 +1,5 @@
-import { entities, game_data } from './config.js';
+import { game_data } from './config.js';
+import { entities } from './config.js';
 import { leave_room } from './network.js';
 export function initInput(canvas) {
 
@@ -47,13 +48,14 @@ export function init() {
 
     if (!storageData || storageData === "null") {
         // 生成4人默认数据
+        /*
         game_data = {
             players: Array(4).fill().map((_,i) => ({
                 id: i+1,
                 ready: false
             }))
-        };
-        console.error('致命错误：缺失游戏数据');
+        };*/
+        //console.error('致命错误：缺失游戏数据');
         sessionStorage.removeItem('game_data');
         //window.location.href = 'lobby.html';
         return;

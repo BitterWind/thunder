@@ -1,5 +1,5 @@
 // 全局游戏配置, 一些与房间无关的东西，每房间都是一样的。
-export const ip = "127.0.0.1:80"
+export const ip = "127.0.0.1:8000"
 export const CONFIG = {
     PLAYER_SIZE         :30,
     BULLET_SPEED        :12,

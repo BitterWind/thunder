@@ -48,6 +48,30 @@ export class GameObject {
     }
 
 }
+/*
+// classes.js
+export class Player extends GameObject {
+    constructor() {
+        super(new Vector2(canvas.width / 2, canvas.height - 50), CONFIG.PLAYER_SIZE, `hsl(${Math.random() * 360}, 70%, 60%)`);
+        this.speed = CONFIG.PLAYER_SPEED;
+        this.keyMouse = new KeyMouse(false, false, false, false, false); // 确保 keyMouse 被正确初始化
+        this.mouse = new Vector2(0, 0);
+        this.id = game_data.id;
+        this.room = game_data.room;
+        this.name = game_data.name;
+        this.shooter_cnt = 0;
+    }
+
+    update(deltaTime) {
+        if (this.keyMouse.KeyA) this.position.x -= this.speed * deltaTime;
+        if (this.keyMouse.KeyD) this.position.x += this.speed * deltaTime;
+        if (this.keyMouse.KeyW) this.position.y -= this.speed * deltaTime;
+        if (this.keyMouse.KeyS) this.position.y += this.speed * deltaTime;
+
+        this.position.x = Math.max(CONFIG.PLAYER_SIZE / 2, Math.min(canvas.width - CONFIG.PLAYER_SIZE / 2, this.position.x));
+        this.position.y = Math.max(CONFIG.PLAYER_SIZE / 2, Math.min(canvas.height - CONFIG.PLAYER_SIZE / 2, this.position.y));
+    }
+}*/
 
 //游戏逻辑实体 ： 玩家
 export class Player extends GameObject {

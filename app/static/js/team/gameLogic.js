@@ -42,6 +42,15 @@ export function gameLoop(timestamp) {
     
 
     // 发射子弹
+    if (timestamp - lastFireTime > CONFIG.FIRE_RATE){
+        entities.players.forEach(player => {
+            if (player.keyMouse.Mouse) {
+                player.fire();
+            }
+        });
+        lastFireTime = timestamp;
+    }
+
     if (timestamp - lastFireTime > CONFIG.FIRE_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
         if(entities.players[0].keyMouse.Mouse){
             entities.players[0].fire();
@@ -53,6 +62,7 @@ export function gameLoop(timestamp) {
         }
         lastFireTime = timestamp;
     }
+    /*
     // 增加shooter
     if ( timestamp - lastAddTime > CONFIG.ADD_SHOOTER_RATE){//实际上，这里的频率最高也就是电脑屏幕的60hz，硬件限制，而不是算力受限。
         lastAddTime = timestamp;
@@ -64,13 +74,15 @@ export function gameLoop(timestamp) {
             entities.shooters2.push(new Shooter(1));//接下来要加个玩家。
             entities.players[1].shooter_cnt++;
         }
-    }
+    }*/
     // 更新实体
     updateEntities(entities.bullets, deltaTime);
     updateEntities(entities.enemies, deltaTime);
     updateEntities(entities.players, deltaTime);
     updateEntities(entities.shooters1, deltaTime);
     updateEntities(entities.shooters2, deltaTime);
+    updateEntities(entities.shooters3, deltaTime);
+    updateEntities(entities.shooters4, deltaTime);
 
     // 生成敌人
     if (Math.random() < CONFIG.ENEMY_SPAWN_RATE) {
@@ -86,6 +98,8 @@ export function gameLoop(timestamp) {
     entities.enemies.forEach(e => e.draw());
     entities.shooters1.forEach(s => s.draw());
     entities.shooters2.forEach(s => s.draw());
+    entities.shooters3.forEach(s => s.draw());
+    entities.shooters4.forEach(s => s.draw());
     // data_send(entities.players[0]);
     // data_request();
     game_data.time_cnt++;

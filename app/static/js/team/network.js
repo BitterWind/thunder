@@ -38,35 +38,54 @@ export async function leaderboard_request() {//id , room ,
 }
 
 // 数据发送方法
+// network.js
 export async function data_send(data) {
-    console.log('data_send :', data);
-    const response = await fetch(CONFIG.SEND_DATA, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(data)//string转换
-    });
-    // if(game_data.time_cnt==60)console.log('data_send Response:', player_data);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    try {
+        console.log('data_send :', data);
+        const response = await fetch(CONFIG.SEND_DATA, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: data.id,
+                position: data.position,
+                keyMouse: data.keyMouse,
+                mouse: data.mouse
+            })
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, detail: ${errorData.detail}`);
+        }
+    } catch (error) {
+        console.error('请求失败:', error);
+    }
 }
 
-// 数据请求方法
 export async function data_request() {
-    const response = await fetch(CONFIG.GET_DATA, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({"id":game_data.team_member.id})//string转换
-    });
-    // console.warn('乱七八糟MouseMove', e);
-    const result = await response.json();
-    console.log('data of players request:', result);
-    console.log('Mouse now of player 1', result.mouse);
-    entities.players[1].position=result.position;
-    entities.players[1].keyMouse=result.key_mouse;
-    entities.players[1].mouse=result.mouse;
-
-    // if(game_data.time_cnt==60)console.log('data_request return:', entities.players[1]);
-    // console.warn('请求返回:', response);
-    return result
+    try {
+        const response = await fetch(CONFIG.GET_DATA, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: game_data.id }) // 确保使用正确的 player_id
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, detail: ${errorData.detail}`);
+        }
+        const result = await response.json();
+        console.log('data of players request:', result);
+        if (result && result.mouse) {
+            console.log('Mouse now of player 1', result.mouse);
+            entities.players[1].position = result.position;
+            entities.players[1].keyMouse = result.keyMouse;
+            entities.players[1].mouse = result.mouse;
+        } else {
+            console.error('请求返回的数据格式不正确');
+        }
+        return result;
+    } catch (error) {
+        console.error('请求失败:', error);
+    }
 }
 
 // 离开房间，清除房间数据，在窗口调整或者关闭时调用

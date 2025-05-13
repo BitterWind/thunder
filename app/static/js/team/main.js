@@ -10,6 +10,8 @@ init();
 // 双人模式，两个角色
 entities.players.push(new Player());
 entities.players.push(new Player());
+entities.players.push(new Player());
+entities.players.push(new Player());
 // 初始化输入系统
 initInput(canvas);
 // 启动游戏循环

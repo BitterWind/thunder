@@ -125,3 +125,47 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
             "playerId": player_id
         })
 
+
+# 在 multiGame.py 文件顶部添加以下内容
+from pydantic import BaseModel
+
+class PlayerData(BaseModel):
+    id: int
+    position: dict
+    keyMouse: dict
+    mouse: dict
+
+
+@router.post("/player_data_cache/send_log_player")
+async def send_log_player(data: PlayerData, db: Session = Depends(get_db)):
+    try:
+        # 确保接收到的数据符合预期
+        if not isinstance(data.position, dict) or not isinstance(data.keyMouse, dict) or not isinstance(data.mouse,
+                                                                                                        dict):
+            raise HTTPException(status_code=400, detail="参数验证失败")
+
+        # 将数据保存到数据库
+        player_data = User(
+            id=data.id,
+            position=data.position,
+            keyMouse=data.keyMouse,
+            mouse=data.mouse
+        )
+        db.add(player_data)
+        db.commit()
+        return {"message": "数据发送成功"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"服务器错误: {str(e)}")
+
+
+@router.post("/player_data_cache/get_log_player")
+async def get_log_player(player_id: int, db: Session = Depends(get_db)):
+    try:
+        player_data = db.query(User).filter(User.id == player_id).first()
+        if not player_data:
+            raise HTTPException(status_code=404, detail="未找到玩家数据")
+        return player_data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"服务器错误: {str(e)}")
+
+

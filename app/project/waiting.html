@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>等候房间</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --cyber-green: #0fff50;
+            --hologram-purple: #bd00ff;
+            --matrix-bg: rgba(0, 20, 30, 0.95);
+        }
+
+        body {
+            margin: 0;
+            background: var(--matrix-bg);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* 动态数字雨背景 */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .cyber-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(0, 40, 60, 0.8);
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 30px var(--neon-blue);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .cyber-title {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--neon-blue), var(--cyber-green));
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px var(--neon-blue);
+            margin-top: 0;
+        }
+
+        .cyber-input {
+            padding: 15px 30px;
+            margin: 10px 5px;
+            background: rgba(0, 40, 60, 0.8);
+            border: 2px solid var(--neon-blue);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+            width: 200px;
+        }
+
+        .cyber-input:focus {
+            outline: none;
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 15px var(--cyber-green);
+        }
+
+        .cyber-button {
+            padding: 15px 30px;
+            margin: 10px 5px;
+            background: linear-gradient(45deg, #002040, #004080);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .cyber-button:hover {
+            background: linear-gradient(45deg, #004080, #0080ff);
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: scale(1.05);
+        }
+
+        .player-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .player-card {
+            background: #3498db;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        #countdown {
+            font-size: 2em;
+            text-align: center;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="cyber-container">
+        <h2 class="cyber-title" id="roomIdDisplay">房间号：加载中...</h2>
+        <div id="playerCount">玩家人数：加载中...</div>
+        <div class="player-list" id="playerList"></div>
+        <div id="countdown"></div>
+        <button class="cyber-button" id="startGameBtn" style="display: none;">开始游戏</button>
+        <button class="cyber-button" id="exitRoomBtn">退出房间</button>
+    </div>
+
+    <script type="module">
+        import { get_room_update, leave_room, start_room } from './js/lobby_network.js';
+        import { game_data } from './js/lobby_config.js';
+        let player_cnt = 1;
+
+        class RoomState {
+            constructor() {
+                const storageData = JSON.parse(sessionStorage.getItem('game_data'));
+                console.log(storageData);
+                this.room = storageData.game_data.room;
+                game_data.room = this.room;
+                this.player_name = storageData.game_data.name;
+                game_data.name = this.player_name;
+                this.id = storageData.game_data.id;
+                game_data.id = this.id;
+                game_data.team_member = storageData.game_data.team_member;
+                this.isHost = JSON.parse(sessionStorage.getItem('is_host'));
+                this.updateInterval = null;
+            }
+
+            async init() {
+                this.renderBaseInfo();
+                this.setupEventListeners();
+                await this.startRoomUpdates();
+            }
+
+            renderBaseInfo() {
+                document.getElementById('roomIdDisplay').textContent = 
+                    `房间号：${this.room} ${this.isHost ? '(房主)' : '(成员)'}`;
+                document.getElementById('startGameBtn').style.display = 
+                    this.isHost ? 'block' : 'none';
+            }
+
+            setupEventListeners() {
+                document.getElementById('startGameBtn').addEventListener('click', async () => {
+                    if (game_data.ready == 1) {
+                        await start_room();
+                    } else if (game_data.ready == 0) {
+                        if (confirm('当前没有队友，是否以单人模式开始？')) {
+                            clearInterval(this.updateInterval);
+                            await leave_room();
+                            window.location.href = 'index_single.html';
+                        }
+                    }
+                });
+
+                document.getElementById('exitRoomBtn').addEventListener('click', async () => {
+                    if (await leave_room()) {
+                        window.location.href = 'lobby.html';
+                    }
+                });
+
+                window.addEventListener('beforeunload', () => {
+                    if (game_data.start == 0) leave_room();
+                });
+            }
+
+            async startRoomUpdates() {
+                this.updateInterval = setInterval(async () => {
+                    await get_room_update(this.id, this.room);
+                    console.log('更新房间状态...', game_data);
+                    this.updatePlayer();
+                    if (game_data.start) {
+                        clearInterval(this.updateInterval);
+                        window.location.href = 'index_team.html';
+                    }
+                }, 1000);
+            }
+
+            updatePlayer() {
+                const listElement = document.getElementById('playerList');
+                const players = [
+                    { 
+                        name: game_data.name, 
+                        id: game_data.id,
+                        ready: game_data.ready
+                    },
+                    game_data.ready == 1 ? 
+                        { 
+                            name: game_data.team_member.name, 
+                            id: game_data.team_member.id,
+                            ready: game_data.ready
+                        } : 
+                        null
+                ].filter(Boolean);
+
+                listElement.innerHTML = players.map(player => `
+                    <div class="player-card">
+                        <div>名称: ${player.name}</div>
+                        <div>ID: ${player.id}</div>
+                        <div>${player.ready ? '✅' : '❌'}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('playerCount').textContent = 
+                    `玩家人数：${players.length}/2`;
+            }
+        }
+
+        const room = new RoomState();
+        room.init();
+    </script>
+</body>
+</html>

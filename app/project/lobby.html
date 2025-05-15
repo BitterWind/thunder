@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>游戏大厅</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --cyber-green: #0fff50;
+            --hologram-purple: #bd00ff;
+            --matrix-bg: rgba(0, 20, 30, 0.95);
+        }
+
+        body {
+            margin: 0;
+            background: var(--matrix-bg);
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        /* 动态数字雨背景 */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .cyber-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(0, 40, 60, 0.8);
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 30px var(--neon-blue);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .cyber-title {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--neon-blue), var(--cyber-green));
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 15px var(--neon-blue);
+            margin-top: 0;
+        }
+
+        .cyber-input {
+            padding: 15px 30px;
+            margin: 10px 5px;
+            background: rgba(0, 40, 60, 0.8);
+            border: 2px solid var(--neon-blue);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+            width: 200px;
+        }
+
+        .cyber-input:focus {
+            outline: none;
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 15px var(--cyber-green);
+        }
+
+        .cyber-button {
+            padding: 15px 30px;
+            margin: 10px 5px;
+            background: linear-gradient(45deg, #002040, #004080);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+
+        .cyber-button:hover {
+            background: linear-gradient(45deg, #004080, #0080ff);
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="cyber-container">
+        <h1 class="cyber-title">游戏大厅</h1>
+        <input type="text" id="name" placeholder="名称" class="cyber-input">
+        <input type="text" id="roomInput" placeholder="输入房间号" class="cyber-input">
+        <div>
+            <!-- 将display: none;移除或设置为display: block;  可以让单人模式按钮重新显现 -->
+            <button class="cyber-button" id="directStartBtn" style="display: none;">单人模式</button>
+            <button class="cyber-button" id="createBtn">创建房间</button>
+            <button class="cyber-button" id="joinBtn">随机加入</button>
+            <button class="cyber-button" id="directJoinBtn">加入指定房间</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { get_id, get_room_update } from './js/lobby_network.js';
+        import { game_data } from './js/lobby_config.js';
+
+        let name = 'default_name';
+        let room = -1;
+        let mode = 5;
+
+        // 获取输入框的值
+        document.getElementById('name').addEventListener('input', (event) => {
+            name = event.target.value;
+            game_data.name = name;
+            console.log(name);
+        });
+
+        // 获取房间号的值
+        document.getElementById('roomInput').addEventListener('input', (event) => {
+            room = event.target.value;
+            console.log(room);
+        });
+
+        // 直接开始
+        document.getElementById('directStartBtn').addEventListener('click', () => {
+            mode = 1;
+            get_id(name, mode);
+        });
+
+        // 创建房间
+        document.getElementById('createBtn').addEventListener('click', () => {
+            mode = 2;
+            get_id(name, mode);
+        });
+
+        // 随机加入
+        document.getElementById('joinBtn').addEventListener('click', () => {
+            mode = 3;
+            get_id(name, mode);
+        });
+
+        // 指定房间加入
+        document.getElementById('directJoinBtn').addEventListener('click', () => {
+            mode = 4;
+            get_id(name, mode, room);
+        });
+
+        // 数字雨背景动画
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const chars = '01';
+        const drops = [];
+
+        // 初始化数字雨
+        for (let i = 0; i < 100; i++) {
+            drops[i] = Math.random() * canvas.height;
+        }
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 20, 30, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0F0';
+
+            drops.forEach((drop, index) => {
+                const char = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(char, index * 20, drop);
+                if (drop > canvas.height && Math.random() > 0.975) drops[index] = 0;
+                drops[index] += 10;
+            });
+        }
+
+        setInterval(drawMatrix, 50);
+    </script>
+</body>
+</html>

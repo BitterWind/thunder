@@ -1,23 +1,23 @@
-from fastapi import FastAPI, HTTPException
+from config import create_app
+from routers import  websocket, player, redis1,  room
 from fastapi.staticfiles import StaticFiles
+from data_bases.SQLite import Base, engine
+from fastapi.templating import Jinja2Templates
 from routes.auth import router as auth_router
 from routes.game import router as game_router
 from routes.sse import router as sse_router
 from routes.multiGame import router as multiGame_router
-from database import Base, engine
 from starlette.middleware.sessions import SessionMiddleware
-from fastapi.middleware.cors import CORSMiddleware  # 新增
+from fastapi.middleware.cors import CORSMiddleware 
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from services.room_cleaner import room_cleanup  # 导入清理函数
-import asyncio
-import uvicorn
-from routers import websocket, player, redis, room
+from fastapi import FastAPI, HTTPException
 
 Base.metadata.create_all(bind=engine)
+# 初始化应用
+app = create_app()
 
-app = FastAPI()
 
 # 添加 CORS 中间件
 app.add_middleware(
@@ -46,31 +46,26 @@ async def validation_exception_handler(request, exc):
 # 添加 SessionMiddleware
 app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
-# 包含路由
+
+# 注册路由
+app.include_router(websocket.router)
+app.include_router(player.router)
+app.include_router(redis1.router)
+app.include_router(room.router)
 app.include_router(auth_router)
 app.include_router(game_router)
 app.include_router(sse_router)
 app.include_router(multiGame_router)
-app.include_router(websocket.router)
-app.include_router(player.router)
-app.include_router(redis.router)
-app.include_router(room.router)
 
 # 挂载静态文件
 app.mount("/static", StaticFiles(directory="./static"), name="static")
 app.mount("/project", StaticFiles(directory="project"), name="project")
 
-from fastapi.templating import Jinja2Templates
-
 templates = Jinja2Templates(directory="./templates")
-
-@app.on_event("startup")
-async def startup_event():
-    scheduler = AsyncIOScheduler()
-    # 每5分钟执行一次清理房间
-    scheduler.add_job(room_cleanup, 'interval', minutes=5)
-    scheduler.start()
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>量子作战室 - {{ room.name }}</title>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --cyber-red: #ff4655;
+            --matrix-green: #00ff9d;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #0d1b2a 0%, #000814 100%);
+            color: var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .cyber-frame {
+            position: relative;
+            background: rgba(13, 27, 42, 0.9);
+            border: 3px solid var(--neon-blue);
+            border-radius: 15px;
+            box-shadow: 0 0 40px rgba(0, 243, 255, 0.2);
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .hologram-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .hologram-header::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg,
+            transparent 45%,
+            rgba(0, 243, 255, 0.1) 50%,
+            transparent 55%);
+            animation: hologram 3s infinite linear;
+        }
+
+        @keyframes hologram {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .player-card {
+            background: linear-gradient(145deg, #001220 0%, #002651 100%);
+            border: 2px solid var(--neon-blue);
+            border-radius: 10px;
+            padding: 1.5rem;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .player-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-pulse {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 157, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 157, 0); }
+        }
+
+        .ready .status-pulse { background: var(--matrix-green); }
+        .waiting .status-pulse { background: var(--cyber-red); }
+
+        .cyber-button {
+            background: linear-gradient(45deg, #004d99, #0066cc);
+            border: 2px solid var(--neon-blue);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .cyber-button:hover {
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.4);
+            transform: scale(1.05);
+        }
+
+        .countdown {
+            font-size: 4rem;
+            text-align: center;
+            text-shadow: 0 0 20px var(--matrix-green);
+            animation: countdown-glow 1s infinite alternate;
+        }
+
+        @keyframes countdown-glow {
+            from { text-shadow: 0 0 10px var(--matrix-green); }
+            to { text-shadow: 0 0 30px var(--matrix-green); }
+        }
+
+        .players-panel {
+            padding: 20px;
+            background: rgba(27, 38, 59, 0.9);
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .player-card {
+            display: grid;
+            grid-template-columns: 40px 1fr auto;
+            align-items: center;
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(0, 20, 40, 0.6);
+            border-radius: 6px;
+        }
+
+        .player-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .status-ready { background: #00ff88; }
+        .status-waiting { background: #ff4655; }
+
+
+    </style>
+    <!-- 引入字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="cyber-frame">
+    <div class="hologram-header">
+        <h1>🛸 量子作战室 - <span class="neon-text">{{ room.name }}</span></h1>
+        <div class="room-stats">
+            <span>👥 {{ room.current_players }}/{{ room.max_players }}</span>
+            <span>⚡ 战斗模式：团队歼灭战</span>
+        </div>
+    </div>
+
+    <div class="players-panel">
+        <h3>🛡️ 当前星际勇士</h3>
+        <div class="player-list" id="playerList">
+            <!-- 动态插入玩家卡片 -->
+        </div>
+    </div>
+
+    <div class="action-panel" style="text-align: center">
+        <button class="cyber-button" id="leave" onclick="leaveRoom()">离开房间</button>
+        <button class="cyber-button" id="readyButton" onclick="readyToggle()">
+            <span class="button-text">战备确认</span>
+            <div class="loading-bar" style="display: none"></div>
+        </button>
+        <div id="countdown" class="countdown" style="display: none"></div>
+    </div>
+</div>
+
+<script>
+    let roomId = {{ room.id }};
+    let isReady = false;
+
+    // 实时状态监听
+    const eventSource = new EventSource(`/room/${roomId}/stream`);
+
+    eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        updateInterface(data);
+    };
+    /*
+    // 初始化加载
+    function updateInterface(room) {
+        // 玩家列表渲染
+        const playerList = document.getElementById('playerList');
+        playerList.innerHTML = room.players.map(player => `
+                <div class="player-card ${player.ready ? 'ready' : 'waiting'}">
+                    <div style="display: flex; align-items: center">
+                        <div class="status-pulse"></div>
+                        <h3>${player.name}</h3>
+                    </div>
+                    <div>最高战绩：${player.max_score}</div>
+                    ${player.is_creator ? '<div class="creator-tag">👑 指挥官</div>' : ''}
+                </div>
+            `).join('');
+
+        // 倒计时处理
+        if (room.countdown) {
+            document.getElementById('countdown').style.display = 'block';
+            document.getElementById('countdown').textContent = room.countdown;
+        }
+    }*/
+
+    // 获取玩家列表
+    async function refreshPlayerList(roomId) {
+        try {
+            const response = await fetch(`/room/${roomId}/players`);
+            const players = await response.json();
+
+
+            const container = document.getElementById('playerList');
+            container.innerHTML = players.map(player => `
+            <div class="player-card">
+                <div class="player-status ${player.ready ? 'status-ready' : 'status-waiting'}"></div>
+                <div>
+                    <strong>${player.name}</strong>
+                    ${player.is_creator ? '👑' : ''}
+                    <div class="score">最高战绩: ${player.max_score}</div>
+                </div>
+                <div>${player.ready ? '准备就绪' : '等待中'}</div>
+            </div>
+        `).join('');
+        } catch (error) {
+            console.error('刷新玩家列表失败:', error);
+        }
+    }
+
+    // 每秒刷新一次
+    setInterval(() => {
+
+        if(roomId) refreshPlayerList(roomId);
+    }, 1000);
+
+    // 准备状态切换
+    async function readyToggle() {
+        const button = document.getElementById('readyButton');
+        try {
+            const response = await fetch(`/room/${roomId}/ready`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+
+            const result = await response.json();
+            isReady = result.ready_status;
+            button.classList.toggle('activated', isReady);
+            button.innerHTML = isReady ?
+                '✅ 战备完成' :
+                '<span class="button-text">战备确认</span>';
+        } catch (error) {
+            console.error('状态更新失败:', error);
+        }
+    }
+
+    //离开房间
+    async function leaveRoom(){
+        try {
+            const response = await fetch(`/leave-room`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+
+            const result = await response.json();
+            window.location.href = result.redirect; // 跳转到等待页面
+        } catch (error) {
+            console.error('离开房间失败:', error);
+        }
+    }
+
+
+    let checkInterval;
+
+    // 启动状态轮询
+    function startStatusCheck(roomId) {
+        checkInterval = setInterval(async () => {
+            try {
+
+                const response = await fetch(`/room/${roomId}/status`);
+                const room = await response.json();
+                const status = room.status;
+
+                if (status === "in_game") {
+                    window.location.href = `/multiGame?room=${roomId}&game=${roomId}`;
+                }
+            } catch (error) {
+                console.error("状态检测失败:", error);
+            }
+        }, 2000);  // 每2秒检测一次
+    }
+
+    // 页面加载时初始化
+    document.addEventListener('DOMContentLoaded', () => {
+
+        startStatusCheck(roomId);
+    });
+</script>
+</body>
+</html>

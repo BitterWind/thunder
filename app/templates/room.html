@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>战备大厅</title>
+    <style>
+        /* 继承基础样式 */
+        body {
+            background-color: #0d1b2a;
+            color: #c0ffee;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* 增强容器效果 */
+        .warroom-container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.1);
+            background: rgba(13, 27, 42, 0.9);
+        }
+
+        /* 区块样式升级 */
+        .command-section {
+            padding: 25px;
+            border-bottom: 1px solid #2a4a6b;
+            transition: transform 0.3s ease;
+        }
+
+        .command-section:hover {
+            transform: translateX(10px);
+        }
+
+        /* 房间创建表单 */
+        .cyber-form {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .cyber-input {
+            padding: 12px;
+            background: rgba(0, 20, 40, 0.8);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            border-radius: 5px;
+            width: 250px;
+        }
+
+        /* 战术按钮 */
+        .tactical-btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #004d99, #0066cc);
+            border: 1px solid #00ffff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tactical-btn:hover {
+            box-shadow: 0 0 15px #0066cc;
+            transform: scale(1.05);
+        }
+
+        /* 房间列表样式 */
+        .room-list {
+            display: grid;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .room-card {
+            background: rgba(27, 38, 59, 0.9);
+            border: 1px solid #2a4a6b;
+            border-radius: 8px;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+        }
+
+        .room-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-preparing { background: #00ff88; }
+        .status-battling { background: #ff4655; }
+
+        /* 提示框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #0d1b2a;
+            border: 2px solid #00ffff;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            max-width: 400px;
+        }
+
+        .modal-content h2 {
+            color: #00ffff;
+            margin-top: 0;
+        }
+
+        .modal-content p {
+            color: white;
+            margin: 10px 0;
+        }
+
+        .modal-content input {
+            padding: 10px;
+            width: 200px;
+            margin: 10px 0;
+            background: rgba(0, 20, 40, 0.8);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            border-radius: 5px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #004d99, #0066cc);
+            border: 1px solid #00ffff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .modal-content button:hover {
+            box-shadow: 0 0 15px #0066cc;
+        }
+    </style>
+</head>
+<body>
+<div class="warroom-container">
+    <!-- 创建房间区块 -->
+    <div class="command-section">
+        <h2>⚔️ 创建战术房间</h2>
+        <form class="cyber-form" id="createRoomForm">
+            <label>房间名称</label>
+            <input type="text" class="cyber-input" placeholder="ALPHA-TEAM" id="roomName">
+            <!--
+            <label>作战模式</label>
+            <select class="cyber-input" id="gameMode">
+                <option>团队歼灭战</option>
+                <option>据点攻防战</option>
+                <option>生存模式</option>
+            </select>-->
+
+            <label>加密口令</label>
+            <input type="password" class="cyber-input" placeholder="可选安全码" id="roomPassword">
+
+            <div></div>
+            <button type="submit" class="tactical-btn">建立指挥中心</button>
+        </form>
+    </div>
+
+    <!-- 房间列表区块 -->
+    <div class="command-section">
+        <h2>🛡️ 现有作战单位</h2>
+        <div class="room-list" id="roomList">
+            <!-- 房间条目将通过JavaScript动态生成 -->
+        </div>
+    </div>
+    <!-- 加入房间提示框 -->
+    <div class="modal" id="joinRoomModal">
+        <div class="modal-content">
+            <h2>输入房间加密口令</h2>
+            <input type="password" id="roomPasswordInput" placeholder="加密口令">
+            <div id="joinRoomError" style="color: #ff4655; display: none; margin: 10px 0;"></div>
+            <div class="button-contianer">
+                <button id="confirmJoin">确认</button>
+                <button id="cancelJoin">取消</button>
+            </div>
+        </div>
+    </div>
+    <!-- 添加在body末尾 -->
+    <div class="modal" id="errorModal">
+        <div class="modal-content">
+            <h2 style="color: #ff4655;">❗ 错误提示</h2>
+            <p id="errorMessage" style="color: white; margin: 15px 0;"></p>
+            <button class="tactical-btn" onclick="document.getElementById('errorModal').style.display='none'">确认</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+
+    let currentJoinRoomName = "";
+
+    // 动态加载房间列表
+    async function loadRooms() {
+        try {
+            const response = await fetch('/rooms');
+            const { rooms } = await response.json();
+
+            const roomList = document.querySelector('.room-list');
+            roomList.innerHTML = ''; // 清空当前列表
+
+            rooms.forEach(room => {
+                const roomCard = document.createElement('div');
+                roomCard.className = 'room-card';
+                roomCard.innerHTML = `
+                <div>
+                        <span class="room-status ${room.status === 'preparing' ? 'status-preparing' : 'status-battling'}"></span>
+                        <strong>${room.name}</strong>
+                </div>
+                <div>👥 ${room.current_players}/${room.max_players}</div>
+
+                <button
+                    class="tactical-btn"
+                    onclick="handleJoinRoom('${room.name}')"
+                >
+                    加入战斗
+                </button>
+            `;
+                roomList.appendChild(roomCard);
+            });
+        } catch (error) {
+            console.error('加载房间列表失败:', error);
+        }
+    }
+
+    // 处理加入房间操作
+    async function handleJoinRoom(roomName) {
+
+        //console.log(roomId)
+        //showJoinRoomPrompt(roomName);
+        currentJoinRoomName = roomName;
+        document.getElementById('joinRoomModal').style.display = 'flex';
+
+    }
+
+    // 页面加载时自动获取房间列表
+    document.addEventListener('DOMContentLoaded', () => {
+        loadRooms();
+        setInterval(loadRooms, 1000); // 每秒刷新房间列表
+    });
+
+
+
+    // 创建房间表单提交
+    document.getElementById('createRoomForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const roomName = document.getElementById('roomName').value;
+        //const gameMode = document.getElementById('gameMode').value;
+        const roomPassword = document.getElementById('roomPassword').value;
+
+        // 客户端验证
+        if (!roomName) {
+            showErrorModal('房间名称不能为空');
+            return;
+        }
+        try {
+            const response = await fetch('/create-room', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: roomName,
+                    //mode: gameMode,
+                    password: roomPassword
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || '创建房间失败');
+            }
+
+
+            // 重新获取房间列表
+
+            loadRooms();
+            document.getElementById('roomName').value = '';
+            document.getElementById('roomPassword').value = '';
+
+            const result = await response.json();
+            window.location.href = result.redirect; // 跳转到等待页面
+        } catch (error) {
+            showErrorModal(error.message);
+            // 可以在这里显示错误提示
+        }
+    });
+
+    // 确认加入房间
+    document.getElementById('confirmJoin').addEventListener('click', async function() {
+        const roomName = currentJoinRoomName;
+        const roomPassword = document.getElementById('roomPasswordInput').value;
+
+
+        try {
+            const response = await fetch('/join-room', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    roomName: roomName,
+                    password: roomPassword
+                })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || '加入房间失败');
+            }
+
+
+
+            // 关闭提示框
+            document.getElementById('joinRoomModal').style.display = 'none';
+
+            const result = await response.json();
+            window.location.href = result.redirect; // 跳转到等待页面
+
+        } catch (error) {
+            document.getElementById('joinRoomError').textContent = error.message;
+            document.getElementById('joinRoomError').style.display = 'block';
+        }
+    });
+
+    // 取消加入房间
+    document.getElementById('cancelJoin').addEventListener('click', function() {
+        document.getElementById('joinRoomModal').style.display = 'none';
+    });
+
+    // 显示错误模态框
+    function showErrorModal(message) {
+        document.getElementById('errorMessage').textContent = message;
+        document.getElementById('errorModal').style.display = 'flex';
+    }
+    // 打开模态框时重置状态
+    function handleJoinRoom(roomName) {
+        currentJoinRoomName = roomName;
+        document.getElementById('roomPasswordInput').value = '';
+        document.getElementById('joinRoomError').style.display = 'none';
+        document.getElementById('joinRoomModal').style.display = 'flex';
+    }
+</script>
+</body>
+</html>

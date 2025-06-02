@@ -142,3 +142,74 @@ async def register(
         status_code=status.HTTP_303_SEE_OTHER
     )
 
+@router.get("/profile")
+async def logout(request: Request):
+    # 检查用户是否已登录
+    username = request.session.get("username")
+
+    if not username:
+        return RedirectResponse(url="/")
+        # 获取用户数据
+    db = SessionLocal()
+    user = db.query(User).filter(User.username == username).first()
+    db.close()
+
+    return templates.TemplateResponse(
+        "profile.html",
+        {"request": request, "username": username, "maxScore": user.maxScore}
+    )
+
+
+# 新增路由 - 修改密码
+@router.post("/change-password", response_class=JSONResponse)
+async def change_password(
+        request: Request,
+        old_password: str = Form(...),
+        new_password: str = Form(...),
+        confirm_password: str = Form(...),
+        db: Session = Depends(get_db)
+):
+    username = request.session.get("username")
+    if not username:
+        return JSONResponse(status_code=401, content={"message": "未认证的用户"})
+
+    user = db.query(User).filter(User.username == username).first()
+
+    if not verify_password(old_password, user.password_hash):
+        return JSONResponse(status_code=400, content={"message": "旧密码错误"})
+
+    if new_password != confirm_password:
+        return JSONResponse(status_code=400, content={"message": "新密码不一致"})
+
+    user.password_hash = get_password_hash(new_password)
+    db.commit()
+
+    return JSONResponse(status_code=200, content={"message": "密码更新成功"})
+
+# 新增路由 - 修改用户名
+@router.post("/change-username", response_class=JSONResponse)
+async def change_username(
+        request: Request,
+        new_username: str = Form(...),
+        password: str = Form(...),
+        db: Session = Depends(get_db)
+):
+    username = request.session.get("username")
+    if not username:
+        return JSONResponse(status_code=401, content={"message": "未认证的用户"})
+
+    user = db.query(User).filter(User.username == username).first()
+    if not verify_password(password, user.password_hash):
+        return JSONResponse(status_code=400, content={"message": "密码错误"})
+
+    existing_user = db.query(User).filter(User.username == new_username).first()
+    if existing_user:
+        return JSONResponse(status_code=400, content={"message": "用户名已存在"})
+
+    user.username = new_username
+    db.commit()
+
+    request.session["username"] = new_username
+
+    return JSONResponse(status_code=200, content={"message": "用户名更新成功"})
+

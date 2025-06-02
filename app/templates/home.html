@@ -118,7 +118,8 @@
     <nav class="cyber-nav">
         <div class="cyber-title">雷霆战机</div>
         <div>
-            <span class="cyber-button" style="margin-right:1rem">👤 {{ username }}</span>
+            <span class="cyber-button" style="margin-right:1rem" onclick="profile()">👤 {{ username }}</span>
+            
             <button class="cyber-button" onclick="logout()">🚪 退出战场</button>
         </div>
     </nav>
@@ -246,6 +247,10 @@
                 .catch(error => {
                     console.error('退出登录请求失败:', error);
                 });
+        }
+
+        function profile() {
+            window.location.href = '/profile';
         }
     </script>
 </body>

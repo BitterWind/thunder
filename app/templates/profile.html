@@ -1,0 +1,388 @@
+<!-- 前端：profile.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>星际档案 - 参数配置</title>
+    <!-- 保持原有样式不变，仅修改文字内容 -->
+    <style>
+        body {
+            background: #000;
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            color: #0ff;
+            overflow: hidden;
+        }
+
+        .cyber-container {
+            width: 800px;
+            margin: 50px auto;
+            border: 2px solid #0ff;
+            box-shadow: 0 0 20px #0ff;
+            position: relative;
+            background: rgba(0, 32, 64, 0.9);
+        }
+
+        .cyber-header {
+            padding: 20px;
+            background: linear-gradient(90deg, #002, #00ffff55);
+            border-bottom: 3px solid #0ff;
+        }
+
+        .grid-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background:
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .cyber-input {
+            background: #001;
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .cyber-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px #0ff;
+        }
+
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border: 2px solid #f0f;
+            margin: 20px;
+            position: relative;
+            background: #112;
+        }
+
+        .hologram-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg,
+                transparent 48%,
+                rgba(255,0,255,0.2) 50%,
+                transparent 52%);
+            animation: scan 3s linear infinite;
+        }
+
+        .neon-btn {
+            background: #002;
+            border: 2px solid #0ff;
+            color: #0ff;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            margin: 10px;
+        }
+
+        .neon-btn:hover {
+            background: #0ff;
+            color: #002;
+            box-shadow: 0 0 30px #0ff;
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 10px;
+            cursor: pointer;
+            border: 2px solid #fff;
+            transition: 0.3s;
+        }
+
+        .stats-bar {
+            height: 20px;
+            background: #002;
+            margin: 15px;
+            border: 1px solid #0ff;
+            position: relative;
+        }
+
+        .stats-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0ff, #f0f);
+            width: 60%;
+            transition: 1s;
+        }
+
+        @keyframes scan {
+            from { background-position: 0 0; }
+            to { background-position: 0 100%; }
+        }
+        .cyber-input-group{
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 增强动态效果 */
+        .cyber-input-group::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -5px;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(to bottom, #0ff, #f0f);
+            opacity: 0.5;
+        }
+
+        .cyber-input-group:hover::before {
+            animation: cyberGlow 1.5s infinite;
+        }
+
+        @keyframes cyberGlow {
+            0% {
+                opacity: 0.2;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 0.2;
+            }
+        }
+
+        /* 密码强度指示器 */
+        .password-strength {
+            height: 4px;
+            margin-top: 5px;
+            background: #002;
+            position: relative;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0;
+            transition: 0.5s;
+            background: linear-gradient(90deg, #f00, #ff0, #0f0);
+        }
+
+        /* 错误状态指示 */
+        .input-error {
+            border-color: #f0f !important;
+            animation: errorShake 0.4s;
+        }
+
+        @keyframes errorShake {
+            0% {
+                transform: translateX(5px);
+            }
+            25% {
+                transform: translateX(-5px);
+            }
+            50% {
+                transform: translateX(5px);
+            }
+            75% {
+                transform: translateX(-5px);
+            }
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .cyber-container {
+                width: 95%;
+                margin: 20px auto;
+            }
+
+            .avatar-preview {
+                width: 80px;
+                height: 80px;
+            }
+        }
+.cyber-alert {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 32, 64, 0.9);
+        border: 2px solid #0ff;
+        box-shadow: 0 0 20px #0ff;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+        z-index: 1000;
+        display: none; /* 默认隐藏 */
+    }
+
+    </style>
+</head>
+<body>
+<!-- 状态提示 -->
+<div id="cyberAlert" class="cyber-alert"></div>
+<div class="cyber-container">
+    <div class="grid-bg"></div>
+
+    <div class="cyber-header">
+        <h1>用户参数配置中心</h1>
+    </div>
+
+    <div style="display: flex; padding: 30px;">
+
+
+        <!-- 右侧设置区 -->
+        <div style="flex: 1;">
+            <!-- 用户名修改 -->
+            <div class="cyber-input-group">
+                <h3>用户名</h3>
+                <input type="text" id="username" class="cyber-input"
+                       placeholder="当前用户ID" style="width: 300px;">
+            </div>
+
+            <!-- 密码修改 -->
+            <div class="cyber-input-group" style="margin-top: 30px;">
+                <h3> 安全协议更新</h3>
+                <input type="password" id="oldPassword" class="cyber-input"
+                       placeholder="旧加密密钥" style="width: 300px;">
+                <input type="password" id="newPassword" class="cyber-input"
+                       placeholder="新加密密钥" style="width: 300px;">
+                <input type="password" id="confirmPassword" class="cyber-input"
+                       placeholder="密钥验证" style="width: 300px;">
+<div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar" id="strengthBar"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="neon-btn" onclick="updatePassword()">更新安全协议</button>
+<button class="neon-btn" onclick="updateUsername()">更新用户名</button>
+                <button class="neon-btn" style="border-color: #f0f" onclick="resetChanges()">取消</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // 动态提示函数
+    function showAlert(message, color = '#0ff') {
+        const alert = document.getElementById('cyberAlert');
+        alert.style.display = 'block';
+        alert.textContent = message;
+        alert.style.borderColor = color;
+        setTimeout(() => alert.style.display = 'none', 1500);
+    }
+
+    // 用于模拟当前用户数据（实际应用中应从后端获取）
+    let currentUser = {
+        username: "{$ username $}",
+        maxScore: "{$ maxScore $}"
+    };
+
+    // 更新密码
+    async function updatePassword() {
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        // 基本验证
+        if (!oldPassword) {
+            showAlert('⚠️ 请输入旧加密密钥', '#f0f');
+            return;
+        }
+        if (!newPassword || !confirmPassword) {
+            showAlert('⚠️ 请完整填写新密钥', '#f0f');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showAlert('⚠️ 新密钥不一致', '#f0f');
+            return;
+        }
+
+        // 使用表单数据发送请求
+        const formData = new FormData();
+        formData.append('old_password', oldPassword);
+        formData.append('new_password', newPassword);
+        formData.append('confirm_password', confirmPassword);
+
+        try {
+            const response = await fetch('/change-password', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                showAlert('✔️ 安全协议更新成功');
+                // 清空密码字段
+                document.getElementById('oldPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } else {
+                showAlert(`⚠️ ${result.message}`, '#f0f');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('‼️ 系统故障：无法连接到中央服务器', '#f00');
+        }
+    }
+
+    // 更新用户名
+    async function updateUsername() {
+        const newUsername = document.getElementById('username').value;
+        const password = document.getElementById('oldPassword').value;
+
+
+        // 基本验证
+        if (!newUsername) {
+            showAlert('⚠️ 请输入新用户名', '#f0f');
+            return;
+        }
+
+        if (!password) {
+            showAlert('⚠️ 请输入密码以验证', '#f0f');
+            return;
+        }
+
+        // 使用表单数据发送请求
+        const formData = new FormData();
+        formData.append('new_username', newUsername);
+        formData.append('password', password);
+
+        try {
+            const response = await fetch('/change-username', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                showAlert('✔️ 用户名更新成功');
+                // 更新当前用户数据（模拟后端响应）
+                currentUser.username = newUsername;
+                // 这里可以添加刷新页面等操作
+            } else {
+                showAlert(`⚠️ ${result.message}`, '#f0f');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showAlert('‼️ 系统故障：无法连接到中央服务器', '#f00');
+        }
+    }
+    // 重置更改
+    function resetChanges() {
+        document.getElementById('username').value = '';
+        document.getElementById('oldPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmPassword').value = '';
+        showAlert('✔️ 参数已重置', '#0f0');
+        window.location.href = '/home';
+    }
+
+</script>
+</body>
+</html>
